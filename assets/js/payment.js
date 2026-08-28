@@ -1,4 +1,4 @@
-const FEDAPAY_CONFIG = { environment: 'sandbox', publicKey: 'VOTRE_CLE_PUBLIQUE_FEDAPAY_SANDBOX' };
+const FEDAPAY_CONFIG = { environment: 'sandbox', publicKey: 'pk_live_jFRM9eaabtQvJ1ggV1E6HxGW' };
 
 const FacturationAPI = {
     generateFactureId() { const annee = new Date().getFullYear(); const numero = String(Math.floor(Math.random() * 9999) + 1).padStart(4, '0'); return 'FAC-' + annee + '-' + numero; },

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion | AKPO TECH SOLUTIONS</title>
+    <meta name="description" content="Connectez-vous à votre espace client AKPO TECH SOLUTIONS.">
+    <meta name="robots" content="noindex, nofollow">
+    
+    <link rel="icon" type="image/png" href="../assets/logo/logo.png">
+    <meta name="theme-color" content="#3B82F6">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/reset.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/auth.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="../assets/js/session-guard.js"></script>
+    
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(160deg, #FFFFFF 0%, #EFF6FF 50%, #DBEAFE 100%);
+            padding: 24px;
+        }
+        .auth-card {
+            background: white;
+            border-radius: 24px;
+            padding: 48px 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.08);
+            width: 100%;
+            max-width: 440px;
+        }
+        .auth-logo { text-align: center; margin-bottom: 32px; }
+        .auth-logo img { height: 48px; }
+        .auth-logo h1 { font-size: 1.5rem; font-weight: 700; color: #0F172A; margin-top: 16px; }
+        .auth-logo p { color: #94A3B8; font-size: 0.9rem; }
+        
+        .auth-message { padding: 12px 16px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 16px; display: none; }
+        .auth-message.error { display: block; background: #FEF2F2; color: #EF4444; border: 1px solid #FECACA; }
+        .auth-message.success { display: block; background: #F0FDF4; color: #16A34A; border: 1px solid #BBF7D0; }
+        
+        .auth-divider { display: flex; align-items: center; margin: 20px 0; color: #94A3B8; font-size: 0.8rem; }
+        .auth-divider::before, .auth-divider::after { content: ''; flex: 1; height: 1px; background: #E2E8F0; }
+        .auth-divider::before { margin-right: 16px; }
+        .auth-divider::after { margin-left: 16px; }
+        
+        .auth-social-btn { width: 100%; padding: 12px; border-radius: 50px; font-weight: 600; font-size: 0.9rem; border: 2px solid #E2E8F0; background: white; cursor: pointer; transition: all 0.3s; display: flex; align-items: center; justify-content: center; gap: 10px; }
+        .auth-social-btn:hover { transform: translateY(-2px); box-shadow: 0 4px 16px rgba(0,0,0,0.06); }
+        .auth-social-btn.google-btn { border-color: #4285F4; color: #4285F4; }
+        .auth-social-btn.google-btn:hover { background: #E8F0FE; }
+        .auth-social-btn.email-btn { border-color: #3B82F6; color: #3B82F6; }
+        .auth-social-btn.email-btn:hover { background: #EFF6FF; }
+        
+        .form-group { margin-bottom: 18px; }
+        .form-group .form-label { display: block; font-size: 0.85rem; font-weight: 600; color: #0F172A; margin-bottom: 6px; }
+        .form-control { width: 100%; padding: 12px 16px; border: 2px solid #E2E8F0; border-radius: 10px; font-size: 0.9rem; transition: all 0.3s; background: white; }
+        .form-control:focus { border-color: #3B82F6; outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        
+        .input-icon-wrapper { position: relative; }
+        .input-icon-wrapper input { padding-right: 44px; }
+        .input-icon-wrapper .password-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94A3B8; cursor: pointer; }
+        
+        .auth-submit { width: 100%; padding: 14px; border-radius: 50px; font-weight: 600; font-size: 0.95rem; border: none; cursor: pointer; transition: all 0.3s; background: linear-gradient(135deg, #3B82F6, #60A5FA); color: white; }
+        .auth-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(59, 130, 246, 0.35); }
+        .auth-submit:disabled { opacity: 0.7; cursor: not-allowed; }
+        
+        .auth-footer { text-align: center; margin-top: 20px; }
+        .auth-footer a { color: #64748B; font-size: 0.85rem; text-decoration: none; transition: color 0.2s; }
+        .auth-footer a:hover { color: #3B82F6; }
+        
+        .session-check { display: none; text-align: center; padding: 40px 20px; color: #64748B; }
+        .session-check.active { display: block; }
+        .session-check .spinner { width: 44px; height: 44px; border: 4px solid #E2E8F0; border-top-color: #3B82F6; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="auth-card">
+
+            
+            <div class="session-check" id="sessionCheck">
+                <div class="spinner"></div>
+                <p>Vérification de votre session...</p>
+            </div>
+
+            
+            <div id="authContent" style="display:none;">
+                <div class="auth-logo">
+                    <a href="../index.html"><img src="../assets/logo/logo.png" alt="AKPO TECH SOLUTIONS"></a>
+                    <h1>Bienvenue</h1>
+                    <p>Connectez-vous à votre espace client</p>
+                </div>
+
+                <div class="auth-message" id="authMessage"></div>
+
+                
+                <div id="authChoice">
+                    <button type="button" class="auth-social-btn google-btn" onclick="loginWithGoogle()">
+                        <svg width="20" height="20" viewBox="0 0 48 48">
+                            <path fill="#4285F4" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"/>
+                            <path fill="#34A853" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"/>
+                            <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.96 16.46 0 20.12 0 24c0 3.88.96 7.54 2.56 10.78l7.97-6.19z"/>
+                            <path fill="#EA4335" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"/>
+                        </svg>
+                        Continuer avec Google
+                    </button>
+
+                    <div class="auth-divider">ou</div>
+
+                    <button type="button" class="auth-social-btn email-btn" onclick="showEmailForm()">
+                        <i class="bi bi-envelope"></i>
+                        Continuer avec un email
+                    </button>
+                </div>
+
+                
+                <div id="emailForm" style="display:none;">
+                    <form id="loginForm">
+                        <div class="form-group">
+                            <label class="form-label">Email</label>
+                            <input type="email" id="loginEmail" class="form-control" placeholder="exemple@email.com" required>
+                        </div>
+                        <div class="form-group">
+                            <label class="form-label">Mot de passe</label>
+                            <div class="input-icon-wrapper">
+                                <input type="password" id="loginPassword" class="form-control" placeholder="Votre mot de passe" required>
+                                <button type="button" class="password-toggle" onclick="togglePass('loginPassword', this)">
+                                    <i class="bi bi-eye"></i>
+                                </button>
+                            </div>
+                        </div>
+                        <div class="d-flex justify-content-between align-items-center mb-3">
+                            <label class="form-check-label">
+                                <input type="checkbox" id="rememberMe"> Se souvenir de moi
+                            </label>
+                            <a href="forgot-password.html" class="text-primary small">Mot de passe oublié ?</a>
+                        </div>
+                        <button type="submit" class="auth-submit" id="loginBtn">
+                            <i class="bi bi-box-arrow-in-right"></i> Se connecter
+                        </button>
+                        <button type="button" class="btn btn-sm text-muted w-100 mt-2" onclick="hideEmailForm()">
+                            <i class="bi bi-arrow-left"></i> Retour
+                        </button>
+                    </form>
+                </div>
+
+                <div class="auth-footer">
+                    <a href="register.html"><i class="bi bi-person-plus"></i> Créer un compte</a>
+                    <span class="mx-2 text-muted">|</span>
+                    <a href="../index.html">Retour au site</a>
+                    <br>
+                    <a href="admin-login.html" class="mt-2 d-inline-block text-muted small">
+                        <i class="bi bi-shield-lock"></i> Administration
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+
+        var sessionCheck = document.getElementById('sessionCheck');
+        var authContent = document.getElementById('authContent');
+        var authMessage = document.getElementById('authMessage');
+        var loginBtn = document.getElementById('loginBtn');
+
+        sessionCheck.classList.add('active');
+
+        AkpoGuard.redirectIfAuthenticated(function() {
+            sessionCheck.classList.remove('active');
+            authContent.style.display = 'block';
+        });
+
+        function togglePass(inputId, btn) {
+            var input = document.getElementById(inputId);
+            var icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
+            }
+        }
+
+        function showMessage(text, type) {
+            authMessage.className = 'auth-message ' + (type || 'error');
+            authMessage.textContent = text;
+            authMessage.style.display = 'block';
+        }
+
+        function hideMessage() {
+            authMessage.style.display = 'none';
+        }
+
+        function showEmailForm() {
+            document.getElementById('authChoice').style.display = 'none';
+            document.getElementById('emailForm').style.display = 'block';
+            hideMessage();
+        }
+
+        function hideEmailForm() {
+            document.getElementById('authChoice').style.display = 'block';
+            document.getElementById('emailForm').style.display = 'none';
+            hideMessage();
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            var email = document.getElementById('loginEmail').value.trim();
+            var password = document.getElementById('loginPassword').value;
+            var rememberMe = document.getElementById('rememberMe').checked;
+
+            hideMessage();
+
+            if (!email || !password) {
+                showMessage('❌ Veuillez remplir tous les champs.', 'error');
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Connexion...';
+
+            var persistence = rememberMe ? firebase.auth.Auth.Persistence.LOCAL : firebase.auth.Auth.Persistence.SESSION;
+
+            auth.setPersistence(persistence)
+                .then(function() {
+                    return auth.signInWithEmailAndPassword(email, password);
+                })
+                .catch(function(error) {
+                    console.error('❌ Erreur connexion:', error);
+                    var message = '❌ Email ou mot de passe incorrect.';
+                    if (error.code === 'auth/user-not-found') {
+                        message = '❌ Aucun compte trouvé avec cet email. <a href="register.html" class="fw-bold text-primary">Inscrivez-vous</a>';
+                    } else if (error.code === 'auth/too-many-requests') {
+                        message = '❌ Trop de tentatives. Réessayez plus tard.';
+                    } else if (error.code === 'auth/network-request-failed') {
+                        message = '❌ Erreur de connexion. Vérifiez votre internet.';
+                    } else {
+                        message = '❌ ' + error.message;
+                    }
+                    showMessage(message, 'error');
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<i class="bi bi-box-arrow-in-right"></i> Se connecter';
+                });
+        });
+
+        function loginWithGoogle() {
+            hideMessage();
+
+            var provider = new firebase.auth.GoogleAuthProvider();
+            provider.addScope('profile');
+            provider.addScope('email');
+
+            auth.signInWithPopup(provider)
+                .then(function(result) {
+                    return db.collection('clients').doc(result.user.uid).get()
+                        .then(function(doc) {
+                            if (!doc.exists) {
+                                return db.collection('clients').doc(result.user.uid).set({
+                                    nom: result.user.displayName || '',
+                                    email: result.user.email,
+                                    téléphone: result.user.phoneNumber || '',
+                                    typeClient: 'particulier',
+                                    adresse: '',
+                                    photo: result.user.photoURL || '',
+                                    dateInscription: firebase.firestore.FieldValue.serverTimestamp(),
+                                    statut: 'actif',
+                                    authProvider: 'google'
+                                });
+                            }
+                            return doc;
+                        })
+                        .then(function() {
+                            window.location.href = '../client/index.html';
+                        });
+                })
+                .catch(function(error) {
+                    console.error('❌ Erreur Google:', error);
+                    if (error.code === 'auth/popup-blocked' || error.code === 'auth/popup-closed-by-user') {
+                        showMessage('❌ Fenêtre de connexion bloquée. Autorisez les popups.', 'error');
+                    } else {
+                        showMessage('❌ ' + error.message, 'error');
+                    }
+                });
+        }
+    </script>
+</body>
+</html>

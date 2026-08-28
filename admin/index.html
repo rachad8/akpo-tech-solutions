@@ -1,0 +1,994 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Administration | AKPO TECH SOLUTIONS</title>
+    <meta name="robots" content="noindex, nofollow">
+    
+    <link rel="icon" type="image/png" href="../assets/logo/logo.png">
+    <meta name="theme-color" content="#3B82F6">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/reset.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="../assets/js/session-guard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../assets/js/payment.js"></script>
+    
+    <style>
+        .stat-card-clickable { cursor: pointer; transition: all 0.2s; }
+        .stat-card-clickable:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .modal-backdrop-admin { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; align-items: center; justify-content: center; }
+        .modal-backdrop-admin.active { display: flex; }
+        .modal-admin { background: white; border-radius: 16px; padding: 24px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; }
+        
+        .sidebar-link .badge {
+            font-size: 0.65rem !important;
+            padding: 3px 8px;
+            border-radius: 20px;
+            margin-left: auto;
+        }
+        .sidebar-link .badge.bg-danger { background: #EF4444 !important; }
+        
+        .loader-container {
+            position: fixed;
+            inset: 0;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        .loader-container .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #E2E8F0;
+            border-top-color: #3B82F6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .loader-container p {
+            margin-top: 16px;
+            color: #94A3B8;
+            font-size: 0.9rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+        
+        .error-container {
+            position: fixed;
+            inset: 0;
+            background: white;
+            display: none;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+            padding: 20px;
+        }
+        .error-container .error-icon {
+            font-size: 4rem;
+            color: #EF4444;
+            margin-bottom: 16px;
+        }
+        .error-container h2 {
+            font-size: 1.5rem;
+            color: #0F172A;
+            margin-bottom: 8px;
+        }
+        .error-container p {
+            color: #64748B;
+            max-width: 400px;
+            text-align: center;
+        }
+        .error-container .btn {
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+
+    
+    <div class="loader-container" id="loaderContainer">
+        <div class="spinner"></div>
+        <p>Chargement de vos données...</p>
+    </div>
+
+    
+    <div class="error-container" id="errorContainer">
+        <div class="error-icon"><i class="bi bi-exclamation-triangle-fill"></i></div>
+        <h2>Erreur de chargement</h2>
+        <p id="errorMessage">Impossible de charger les données depuis Firestore. Vérifiez votre connexion et vos droits d'accès.</p>
+        <button class="btn btn-primary" onclick="location.reload()"><i class="bi bi-arrow-repeat"></i> Réessayer</button>
+        <button class="btn btn-secondary mt-2" onclick="window.location.href='../auth/admin-login.html'"><i class="bi bi-box-arrow-right"></i> Retour à la connexion</button>
+    </div>
+
+    
+    <div id="adminDashboard" class="dashboard-layout" style="display:none;">
+        
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-brand">
+                <a href="../index.html"><img src="../assets/logo/logo.png" alt="AKPO TECH" style="height:36px;"></a>
+                <small style="color:#94A3B8;display:block;font-size:0.7rem;">Administration</small>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="#" class="sidebar-link active" data-page="dashboard">
+                    <i class="bi bi-speedometer2"></i> Tableau de bord
+                </a>
+                <a href="#" class="sidebar-link" data-page="demandes">
+                    <i class="bi bi-list-check"></i> Demandes
+                    <span class="badge bg-danger" id="badgeDemandes" style="display:none;">0</span>
+                </a>
+                <a href="#" class="sidebar-link" data-page="contacts">
+                    <i class="bi bi-envelope"></i> Messages
+                    <span class="badge bg-danger" id="badgeMessages" style="display:none;">0</span>
+                </a>
+                <a href="#" class="sidebar-link" data-page="clients">
+                    <i class="bi bi-people"></i> Clients
+                </a>
+                <a href="#" class="sidebar-link" data-page="factures">
+                    <i class="bi bi-receipt"></i> Factures
+                </a>
+                <a href="#" class="sidebar-link" data-page="commentaires">
+                    <i class="bi bi-chat-square-text"></i> Commentaires
+                </a>
+                <a href="#" class="sidebar-link" data-page="services">
+                    <i class="bi bi-bar-chart"></i> Statistiques
+                </a>
+                <a href="#" class="sidebar-link">
+                    <i class="bi bi-gear"></i> Paramètres
+                </a>
+            </nav>
+            <div style="margin-top:auto;">
+                <a href="../index.html" class="sidebar-link" style="color:#94A3B8;">
+                    <i class="bi bi-arrow-left"></i> Retour au site
+                </a>
+                <button class="sidebar-logout" onclick="handleLogout()">
+                    <i class="bi bi-box-arrow-right"></i> Déconnexion
+                </button>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+            
+            
+            <div id="page-dashboard">
+                <div class="dashboard-header">
+                    <h1><i class="bi bi-speedometer2"></i> Tableau de bord</h1>
+                </div>
+                <div class="dashboard-stats">
+                    <div class="dashboard-stat-card stat-card-clickable" onclick="navigateTo('demandes')">
+                        <div class="dashboard-stat-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-list-check"></i></div>
+                        <div><div class="dashboard-stat-value" id="statAll">0</div><div class="dashboard-stat-label">Total demandes</div></div>
+                    </div>
+                    <div class="dashboard-stat-card stat-card-clickable" onclick="navigateTo('demandes')">
+                        <div class="dashboard-stat-icon bg-warning bg-opacity-10 text-warning"><i class="bi bi-clock"></i></div>
+                        <div><div class="dashboard-stat-value" id="statAttente">0</div><div class="dashboard-stat-label">En attente</div></div>
+                    </div>
+                    <div class="dashboard-stat-card">
+                        <div class="dashboard-stat-icon bg-info bg-opacity-10 text-info"><i class="bi bi-hourglass-split"></i></div>
+                        <div><div class="dashboard-stat-value" id="statCours">0</div><div class="dashboard-stat-label">En cours</div></div>
+                    </div>
+                    <div class="dashboard-stat-card">
+                        <div class="dashboard-stat-icon bg-success bg-opacity-10 text-success"><i class="bi bi-check-circle"></i></div>
+                        <div><div class="dashboard-stat-value" id="statTermine">0</div><div class="dashboard-stat-label">Terminées</div></div>
+                    </div>
+                    <div class="dashboard-stat-card stat-card-clickable" onclick="navigateTo('contacts')">
+                        <div class="dashboard-stat-icon bg-warning bg-opacity-10 text-warning"><i class="bi bi-envelope"></i></div>
+                        <div><div class="dashboard-stat-value" id="statMsg">0</div><div class="dashboard-stat-label">Messages</div></div>
+                    </div>
+                    <div class="dashboard-stat-card stat-card-clickable" onclick="navigateTo('clients')">
+                        <div class="dashboard-stat-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-people"></i></div>
+                        <div><div class="dashboard-stat-value" id="statCli">0</div><div class="dashboard-stat-label">Clients</div></div>
+                    </div>
+                </div>
+                <div class="dashboard-table-card">
+                    <div class="dashboard-table-header">
+                        <h3><i class="bi bi-clock-history"></i> Dernières demandes</h3>
+                        <a href="#" class="btn btn-sm btn-outline-primary" onclick="navigateTo('demandes')">Voir tout <i class="bi bi-arrow-right"></i></a>
+                    </div>
+                    <div class="table-responsive">
+                        <table class="dashboard-table">
+                            <thead><tr><th>Réf</th><th>Client</th><th>Service</th><th>Statut</th><th>Date</th></tr></thead>
+                            <tbody id="recentDemandes"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div id="page-demandes" style="display:none;">
+                <div class="dashboard-header">
+                    <h1><i class="bi bi-list-check"></i> Demandes clients</h1>
+                    <div style="display:flex;gap:8px;">
+                        <input type="text" class="form-control form-control-sm" placeholder="Rechercher..." id="searchDemandes" oninput="filterDemandes()" style="width:200px;">
+                        <select class="form-select form-select-sm" id="filterStatut" onchange="filterDemandes()" style="width:150px;">
+                            <option value="tous">Tous</option>
+                            <option value="en-attente">En attente</option>
+                            <option value="en-cours">En cours</option>
+                            <option value="termine">Terminé</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="dashboard-table-card">
+                    <div class="table-responsive">
+                        <table class="dashboard-table">
+                            <thead><tr><th>Réf</th><th>Client</th><th>Tél</th><th>Service</th><th>Statut</th><th>Date</th><th>Actions</th></tr></thead>
+                            <tbody id="allDemandes"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div id="page-contacts" style="display:none;">
+                <div class="dashboard-header"><h1><i class="bi bi-envelope"></i> Messages du site</h1></div>
+                <div class="dashboard-table-card">
+                    <div class="table-responsive">
+                        <table class="dashboard-table">
+                            <thead><tr><th>Date</th><th>Nom</th><th>Tél</th><th>Email</th><th>Service</th><th>Actions</th></tr></thead>
+                            <tbody id="allMessages"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div id="page-clients" style="display:none;">
+                <div class="dashboard-header"><h1><i class="bi bi-people"></i> Clients inscrits</h1></div>
+                <div class="dashboard-table-card">
+                    <div class="table-responsive">
+                        <table class="dashboard-table">
+                            <thead><tr><th>Nom</th><th>Email</th><th>Tél</th><th>Type</th><th>Inscription</th><th>Demandes</th></tr></thead>
+                            <tbody id="allClients"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div id="page-factures" style="display:none;">
+                <div class="dashboard-header">
+                    <h1><i class="bi bi-receipt"></i> Factures</h1>
+                    <button class="btn btn-primary btn-sm" onclick="showCreateFacture()"><i class="bi bi-plus-circle"></i> Créer une facture</button>
+                </div>
+                <div class="dashboard-table-card">
+                    <div class="table-responsive">
+                        <table class="dashboard-table">
+                            <thead><tr><th>N°</th><th>Client</th><th>Montant</th><th>Statut</th><th>Date</th><th>Actions</th></tr></thead>
+                            <tbody id="allFactures"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div id="page-commentaires" style="display:none;">
+                <div class="dashboard-header"><h1><i class="bi bi-chat-square-text"></i> Commentaires</h1></div>
+                <div class="dashboard-table-card">
+                    <div class="table-responsive">
+                        <table class="dashboard-table">
+                            <thead><tr><th>Date</th><th>Nom</th><th>Note</th><th>Commentaire</th><th>Actions</th></tr></thead>
+                            <tbody id="allCommentaires"></tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div id="page-services" style="display:none;">
+                <div class="dashboard-header">
+                    <h1><i class="bi bi-bar-chart"></i> Statistiques</h1>
+                    <button class="btn btn-secondary btn-sm" onclick="updateServicesStats(); setTimeout(updateCharts,200);"><i class="bi bi-arrow-repeat"></i> Actualiser</button>
+                </div>
+                <div class="dashboard-stats" id="servicesStats"></div>
+                <div class="row mt-4">
+                    <div class="col-md-6">
+                        <div class="dashboard-table-card" style="padding:20px;">
+                            <h4 style="margin-bottom:16px;font-size:0.95rem;"><i class="bi bi-pie-chart"></i> Demandes par statut</h4>
+                            <canvas id="statusChart" height="200"></canvas>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="dashboard-table-card" style="padding:20px;">
+                            <h4 style="margin-bottom:16px;font-size:0.95rem;"><i class="bi bi-graph-up"></i> Évolution des demandes</h4>
+                            <canvas id="evolutionChart" height="200"></canvas>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    
+    <div class="modal-backdrop-admin" id="modalBackdrop">
+        <div class="modal-admin" id="modalContent"></div>
+    </div>
+
+    
+    <script>
+
+        var allDemandes = [];
+        var allClients = [];
+        var allMessages = [];
+        var allFactures = [];
+        var allCommentaires = [];
+        var realtimeListenersActive = false;
+        var statusChartInstance = null;
+        var evolutionChartInstance = null;
+
+        function escapeHtml(str) {
+            if (!str) return '';
+            return String(str)
+                .replace(/&/g, '&amp;')
+                .replace(/</g, '&lt;')
+                .replace(/>/g, '&gt;')
+                .replace(/"/g, '&quot;')
+                .replace(/'/g, '&#039;');
+        }
+
+        function formatDate(d) {
+            if (!d) return '';
+            var dt = d.toDate ? d.toDate() : new Date(d);
+            if (isNaN(dt.getTime())) return '';
+            return dt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        function statusLabel(s) {
+            var labels = { 'en-attente': 'En attente', 'en-cours': 'En cours', 'termine': 'Terminé' };
+            return labels[s] || s;
+        }
+
+        function statusColor(s) {
+            var colors = { 'en-attente': 'warning', 'en-cours': 'info', 'termine': 'success' };
+            return colors[s] || 'secondary';
+        }
+
+        function showError(message) {
+            var container = document.getElementById('errorContainer');
+            var msg = document.getElementById('errorMessage');
+            if (msg) msg.textContent = message || 'Une erreur est survenue.';
+            if (container) container.style.display = 'flex';
+            document.getElementById('loaderContainer').style.display = 'none';
+            document.getElementById('adminDashboard').style.display = 'none';
+        }
+
+        function handleLogout() {
+            AkpoGuard.logout('../auth/admin-login.html');
+        }
+
+        AkpoGuard.requireAdmin(function() {
+            var loader = document.getElementById('loaderContainer');
+            var dashboard = document.getElementById('adminDashboard');
+            if (loader) loader.style.display = 'none';
+            if (dashboard) dashboard.style.display = 'flex';
+            loadAllData();
+            listenRealtime();
+        });
+
+        function loadAllData() {
+            console.log('📊 Début du chargement des données...');
+
+            db.collection('clients').get()
+                .then(function(snapshot) {
+                    console.log('📋 Clients trouvés:', snapshot.size);
+                    var promises = [];
+                    
+                    snapshot.forEach(function(doc) {
+                        var data = doc.data();
+
+                        if (data.role === 'admin') {
+                            console.log('⏭️ Admin ignoré:', doc.id);
+                            return;
+                        }
+                        
+                        allClients.push({ id: doc.id, ...data });
+
+                        var promise = db.collection('clients').doc(doc.id)
+                            .collection('demandes').orderBy('date', 'desc').get()
+                            .then(function(demandesSnap) {
+                                demandesSnap.forEach(function(d) {
+                                    allDemandes.push({
+                                        id: d.id,
+                                        clientId: doc.id,
+                                        clientNom: data.nom || 'Inconnu',
+                                        clientTéléphone: data.téléphone || '',
+                                        clientEmail: data.email || '',
+                                        ...d.data()
+                                    });
+                                });
+                            })
+                            .catch(function(error) {
+                                console.error('❌ Erreur chargement demandes:', error);
+                            });
+                        promises.push(promise);
+                    });
+                    
+                    return Promise.all(promises);
+                })
+                .then(function() {
+                    console.log('✅ Clients:', allClients.length, 'Demandes:', allDemandes.length);
+                    return db.collection('contacts').orderBy('date', 'desc').get();
+                })
+                .then(function(snapshot) {
+                    snapshot.forEach(function(doc) {
+                        allMessages.push({ id: doc.id, ...doc.data() });
+                    });
+                    console.log('✅ Messages:', allMessages.length);
+                    return db.collection('factures').orderBy('date', 'desc').get();
+                })
+                .then(function(snapshot) {
+                    snapshot.forEach(function(doc) {
+                        allFactures.push({ id: doc.id, ...doc.data() });
+                    });
+                    console.log('✅ Factures:', allFactures.length);
+                    return db.collection('commentaires').orderBy('date', 'desc').get();
+                })
+                .then(function(snapshot) {
+                    snapshot.forEach(function(doc) {
+                        allCommentaires.push({ id: doc.id, ...doc.data() });
+                    });
+                    console.log('✅ Commentaires:', allCommentaires.length);
+
+                    updateDashboard();
+                    updateAllTables();
+                    updateServicesStats();
+                    navigateTo('dashboard');
+                    
+                    console.log('🎉 Chargement terminé !');
+                })
+                .catch(function(error) {
+                    console.error('❌ Erreur chargement:', error);
+                    showError('Erreur de chargement des données : ' + error.message);
+                });
+        }
+
+        function updateDashboard() {
+            document.getElementById('statAll').textContent = allDemandes.length;
+            document.getElementById('statAttente').textContent = allDemandes.filter(function(d) { return d.statut === 'en-attente'; }).length;
+            document.getElementById('statCours').textContent = allDemandes.filter(function(d) { return d.statut === 'en-cours'; }).length;
+            document.getElementById('statTermine').textContent = allDemandes.filter(function(d) { return d.statut === 'termine'; }).length;
+            document.getElementById('statMsg').textContent = allMessages.filter(function(m) { return !m.lu; }).length;
+            document.getElementById('statCli').textContent = allClients.length;
+
+            var nbAttente = allDemandes.filter(function(d) { return d.statut === 'en-attente'; }).length;
+            var badgeDemandes = document.getElementById('badgeDemandes');
+            if (nbAttente > 0) {
+                badgeDemandes.style.display = 'inline';
+                badgeDemandes.textContent = nbAttente;
+            } else {
+                badgeDemandes.style.display = 'none';
+            }
+
+            var nbMsgNonLus = allMessages.filter(function(m) { return !m.lu; }).length;
+            var badgeMessages = document.getElementById('badgeMessages');
+            if (nbMsgNonLus > 0) {
+                badgeMessages.style.display = 'inline';
+                badgeMessages.textContent = nbMsgNonLus;
+            } else {
+                badgeMessages.style.display = 'none';
+            }
+
+            document.getElementById('recentDemandes').innerHTML = allDemandes.slice(0,10).map(function(d) {
+                return '<tr>' +
+                    '<td><strong>' + escapeHtml(d.id) + '</strong></td>' +
+                    '<td>' + escapeHtml(d.clientNom) + '</td>' +
+                    '<td>' + escapeHtml(d.service) + '</td>' +
+                    '<td><span class="badge bg-' + statusColor(d.statut) + '">' + statusLabel(d.statut) + '</span></td>' +
+                    '<td>' + formatDate(d.date) + '</td>' +
+                '</tr>';
+            }).join('') || '<tr><td colspan="5" class="text-center text-muted"><i class="bi bi-inbox"></i> Aucune demande</td></tr>';
+        }
+
+        function updateAllTables() {
+            updateDemandesTable();
+            updateMessagesTable();
+            updateClientsTable();
+            updateFacturesTable();
+            updateCommentairesTable();
+        }
+
+        function updateDemandesTable(filtered) {
+            var data = filtered || allDemandes;
+            document.getElementById('allDemandes').innerHTML = data.map(function(d) {
+                return '<tr>' +
+                    '<td><strong>' + escapeHtml(d.id) + '</strong></td>' +
+                    '<td>' + escapeHtml(d.clientNom) + '</td>' +
+                    '<td>' + escapeHtml(d.clientTéléphone) + '</td>' +
+                    '<td>' + escapeHtml(d.service) + '</td>' +
+                    '<td><select class="form-select form-select-sm" onchange="changeStatut(\'' + d.clientId + '\',\'' + d.id + '\',this.value)">' +
+                        '<option value="en-attente" ' + (d.statut === 'en-attente' ? 'selected' : '') + '>En attente</option>' +
+                        '<option value="en-cours" ' + (d.statut === 'en-cours' ? 'selected' : '') + '>En cours</option>' +
+                        '<option value="termine" ' + (d.statut === 'termine' ? 'selected' : '') + '>Terminé</option>' +
+                    '</select></td>' +
+                    '<td>' + formatDate(d.date) + '</td>' +
+                    '<td>' +
+                        '<button class="btn btn-sm btn-outline-primary" onclick="showDetail(\'' + d.clientId + '\',\'' + d.id + '\')" title="Voir détails"><i class="bi bi-eye"></i></button>' +
+                        '<button class="btn btn-sm btn-outline-danger" onclick="deleteDemande(\'' + d.clientId + '\',\'' + d.id + '\')" title="Supprimer"><i class="bi bi-trash"></i></button>' +
+                    '</td>' +
+                '</tr>';
+            }).join('') || '<tr><td colspan="7" class="text-center text-muted"><i class="bi bi-inbox"></i> Aucune demande</td></tr>';
+        }
+
+        function updateMessagesTable() {
+            document.getElementById('allMessages').innerHTML = allMessages.map(function(m) {
+                return '<tr class="' + (!m.lu ? 'fw-bold' : '') + '">' +
+                    '<td>' + formatDate(m.date) + '</td>' +
+                    '<td>' + escapeHtml(m.nom) + '</td>' +
+                    '<td>' + escapeHtml(m.téléphone) + '</td>' +
+                    '<td>' + escapeHtml(m.email) + '</td>' +
+                    '<td>' + escapeHtml(m.service) + '</td>' +
+                    '<td>' +
+                        '<button class="btn btn-sm btn-outline-primary" onclick="showMessage(\'' + m.id + '\')" title="Voir le message"><i class="bi bi-eye"></i></button>' +
+                        '<button class="btn btn-sm btn-outline-danger" onclick="deleteMessage(\'' + m.id + '\')" title="Supprimer"><i class="bi bi-trash"></i></button>' +
+                    '</td>' +
+                '</tr>';
+            }).join('') || '<tr><td colspan="6" class="text-center text-muted"><i class="bi bi-inbox"></i> Aucun message</td></tr>';
+        }
+
+        function updateClientsTable() {
+            document.getElementById('allClients').innerHTML = allClients.map(function(c) {
+                return '<tr>' +
+                    '<td><strong>' + escapeHtml(c.nom) + '</strong></td>' +
+                    '<td>' + escapeHtml(c.email) + '</td>' +
+                    '<td>' + escapeHtml(c.téléphone) + '</td>' +
+                    '<td><span class="badge bg-' + (c.typeClient === 'entreprise' ? 'info' : 'primary') + '">' + (c.typeClient === 'entreprise' ? 'Entreprise' : 'Particulier') + '</span></td>' +
+                    '<td>' + formatDate(c.dateInscription) + '</td>' +
+                    '<td>' + allDemandes.filter(function(d) { return d.clientId === c.id; }).length + '</td>' +
+                '</tr>';
+            }).join('') || '<tr><td colspan="6" class="text-center text-muted"><i class="bi bi-people"></i> Aucun client</td></tr>';
+        }
+
+        function updateFacturesTable() {
+            document.getElementById('allFactures').innerHTML = allFactures.map(function(f) {
+                var facture = allFactures.find(function(x) { return x.id === f.id; });
+                return '<tr>' +
+                    '<td><strong>' + escapeHtml(f.id) + '</strong></td>' +
+                    '<td>' + escapeHtml(f.clientNom) + '</td>' +
+                    '<td><strong>' + (f.montant || 0).toLocaleString() + ' FCFA</strong></td>' +
+                    '<td><span class="badge bg-' + (f.statut === 'payee' ? 'success' : 'warning') + '">' + (f.statut === 'payee' ? 'Payée' : 'En attente') + '</span></td>' +
+                    '<td>' + formatDate(f.date) + '</td>' +
+                    '<td>' +
+                        '<button class="btn btn-sm btn-outline-primary" onclick="downloadFacture(\'' + f.id + '\')" title="Télécharger PDF"><i class="bi bi-download"></i></button>' +
+                        '<button class="btn btn-sm btn-outline-secondary" onclick="sendFactureEmail(\'' + f.id + '\')" title="Envoyer par email"><i class="bi bi-envelope"></i></button>' +
+                        '<button class="btn btn-sm btn-outline-success" onclick="markPaid(\'' + f.id + '\')" title="Marquer comme payée"><i class="bi bi-check"></i></button>' +
+                    '</td>' +
+                '</tr>';
+            }).join('') || '<tr><td colspan="6" class="text-center text-muted"><i class="bi bi-receipt"></i> Aucune facture</td></tr>';
+        }
+
+        function updateCommentairesTable() {
+            document.getElementById('allCommentaires').innerHTML = allCommentaires.map(function(c) {
+                return '<tr>' +
+                    '<td>' + formatDate(c.date) + '</td>' +
+                    '<td>' + escapeHtml(c.nom) + '</td>' +
+                    '<td>' + '⭐'.repeat(c.note || 0) + '☆'.repeat(5 - (c.note || 0)) + '</td>' +
+                    '<td>' + escapeHtml(c.texte) + '</td>' +
+                    '<td><button class="btn btn-sm btn-outline-danger" onclick="deleteCommentaire(\'' + c.id + '\')" title="Supprimer"><i class="bi bi-trash"></i></button></td>' +
+                '</tr>';
+            }).join('') || '<tr><td colspan="5" class="text-center text-muted"><i class="bi bi-chat-square-text"></i> Aucun commentaire</td></tr>';
+        }
+
+        function downloadFacture(id) {
+            var f = allFactures.find(function(x) { return x.id === id; });
+            if (!f) {
+                alert('❌ Facture introuvable.');
+                return;
+            }
+            if (typeof FacturationAPI !== 'undefined' && FacturationAPI.downloadFacturePDF) {
+                FacturationAPI.downloadFacturePDF(f);
+            } else {
+                alert('❌ Le module de facturation n\'est pas disponible.');
+            }
+        }
+
+        function sendFactureEmail(id) {
+            var f = allFactures.find(function(x) { return x.id === id; });
+            if (!f) {
+                alert('❌ Facture introuvable.');
+                return;
+            }
+            if (typeof FacturationAPI !== 'undefined' && FacturationAPI.sendFactureEmail) {
+                FacturationAPI.sendFactureEmail(f);
+            } else {
+                alert('❌ Le module de facturation n\'est pas disponible.');
+            }
+        }
+
+        function updateServicesStats() {
+            var counts = {};
+            allDemandes.forEach(function(d) {
+                counts[d.service] = (counts[d.service] || 0) + 1;
+            });
+            document.getElementById('servicesStats').innerHTML = Object.entries(counts).sort(function(a, b) { return b[1] - a[1]; }).map(function(s) {
+                return '<div class="dashboard-stat-card">' +
+                    '<div class="dashboard-stat-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-tools"></i></div>' +
+                    '<div><div class="dashboard-stat-value">' + s[1] + '</div><div class="dashboard-stat-label">' + escapeHtml(s[0]) + '</div></div>' +
+                '</div>';
+            }).join('') || '<p class="text-muted text-center w-100"><i class="bi bi-inbox"></i> Aucune donnée</p>';
+            setTimeout(updateCharts, 100);
+        }
+
+        function updateCharts() {
+            var ctx1 = document.getElementById('statusChart');
+            if (!ctx1) return;
+
+            var statuts = ['en-attente', 'en-cours', 'termine'];
+            var counts = statuts.map(function(s) { return allDemandes.filter(function(d) { return d.statut === s; }).length; });
+
+            if (counts.every(function(c) { return c === 0; })) {
+                if (statusChartInstance) statusChartInstance.destroy();
+                var ctx = ctx1.getContext('2d');
+                ctx.clearRect(0, 0, ctx1.width, ctx1.height);
+                ctx.fillStyle = '#94A3B8';
+                ctx.font = '16px Inter';
+                ctx.textAlign = 'center';
+                ctx.fillText('Aucune donnée disponible', ctx1.width/2, ctx1.height/2);
+                return;
+            }
+
+            if (statusChartInstance) statusChartInstance.destroy();
+            statusChartInstance = new Chart(ctx1, {
+                type: 'doughnut',
+                data: {
+                    labels: ['En attente', 'En cours', 'Terminé'],
+                    datasets: [{
+                        data: counts,
+                        backgroundColor: ['#F59E0B', '#3B82F6', '#10B981'],
+                        borderWidth: 0
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { position: 'bottom', labels: { padding: 16, usePointStyle: true, pointStyle: 'circle' } } },
+                    cutout: '65%'
+                }
+            });
+
+            var ctx2 = document.getElementById('evolutionChart');
+            if (!ctx2) return;
+
+            var months = {};
+            allDemandes.forEach(function(d) {
+                var date = d.date ? (d.date.toDate ? d.date.toDate() : new Date(d.date)) : new Date();
+                var key = date.toLocaleString('fr-FR', { month: 'short', year: 'numeric' });
+                if (!months[key]) months[key] = 0;
+                months[key]++;
+            });
+
+            var sortedMonths = Object.keys(months).sort(function(a, b) {
+                var da = new Date(a);
+                var db = new Date(b);
+                return da - db;
+            });
+
+            if (evolutionChartInstance) evolutionChartInstance.destroy();
+            evolutionChartInstance = new Chart(ctx2, {
+                type: 'bar',
+                data: {
+                    labels: sortedMonths,
+                    datasets: [{
+                        label: 'Demandes',
+                        data: sortedMonths.map(function(m) { return months[m]; }),
+                        backgroundColor: '#3B82F6',
+                        borderRadius: 6,
+                        borderSkipped: false
+                    }]
+                },
+                options: {
+                    responsive: true,
+                    maintainAspectRatio: true,
+                    plugins: { legend: { display: false } },
+                    scales: { y: { beginAtZero: true, ticks: { stepSize: 1 } } }
+                }
+            });
+        }
+
+        function changeStatut(cid, did, ns) {
+            db.collection('clients').doc(cid).collection('demandes').doc(did).update({ statut: ns })
+                .then(function() {
+                    var item = allDemandes.find(function(d) { return d.id === did && d.clientId === cid; });
+                    if (item) item.statut = ns;
+                    updateDashboard();
+                })
+                .catch(function(error) {
+                    console.error('❌ Erreur changement statut:', error);
+                    alert('❌ Erreur lors de la mise à jour du statut.');
+                });
+        }
+
+        function deleteDemande(cid, did) {
+            if (!confirm('Supprimer cette demande ?')) return;
+            db.collection('clients').doc(cid).collection('demandes').doc(did).delete()
+                .then(function() {
+                    allDemandes = allDemandes.filter(function(d) { return !(d.id === did && d.clientId === cid); });
+                    updateDashboard();
+                    updateDemandesTable();
+                })
+                .catch(function(error) {
+                    console.error('❌ Erreur suppression demande:', error);
+                    alert('❌ Erreur lors de la suppression de la demande.');
+                });
+        }
+
+        function deleteMessage(id) {
+            if (!confirm('Supprimer ce message ?')) return;
+            db.collection('contacts').doc(id).delete()
+                .then(function() {
+                    allMessages = allMessages.filter(function(m) { return m.id !== id; });
+                    updateMessagesTable();
+                    updateDashboard();
+                })
+                .catch(function(error) {
+                    console.error('❌ Erreur suppression message:', error);
+                    alert('❌ Erreur lors de la suppression du message.');
+                });
+        }
+
+        function deleteCommentaire(id) {
+            if (!confirm('Supprimer ce commentaire ?')) return;
+            db.collection('commentaires').doc(id).delete()
+                .then(function() {
+                    allCommentaires = allCommentaires.filter(function(c) { return c.id !== id; });
+                    updateCommentairesTable();
+                })
+                .catch(function(error) {
+                    console.error('❌ Erreur suppression commentaire:', error);
+                    alert('❌ Erreur lors de la suppression du commentaire.');
+                });
+        }
+
+        function markPaid(id) {
+            if (typeof FacturationAPI === 'undefined' || !FacturationAPI.updateStatut) {
+                alert('❌ Le module de facturation n\'est pas disponible.');
+                return;
+            }
+            FacturationAPI.updateStatut(id, 'payee')
+                .then(function(result) {
+                    if (result && result.success === false) {
+                        alert('❌ Erreur : ' + (result.error || 'mise à jour impossible.'));
+                        return;
+                    }
+                    var f = allFactures.find(function(fact) { return fact.id === id; });
+                    if (f) f.statut = 'payee';
+                    updateFacturesTable();
+                })
+                .catch(function(error) {
+                    console.error('❌ Erreur marquage payé:', error);
+                    alert('❌ Erreur lors de la mise à jour de la facture.');
+                });
+        }
+
+        function filterDemandes() {
+            var s = document.getElementById('searchDemandes').value.toLowerCase();
+            var st = document.getElementById('filterStatut').value;
+            updateDemandesTable(allDemandes.filter(function(d) {
+                return ((d.clientNom || '').toLowerCase().includes(s) || (d.id || '').toLowerCase().includes(s)) &&
+                    (st === 'tous' || d.statut === st);
+            }));
+        }
+
+        function navigateTo(page) {
+            document.querySelectorAll('[id^="page-"]').forEach(function(p) { p.style.display = 'none'; });
+            var target = document.getElementById('page-' + page);
+            if (target) target.style.display = 'block';
+            
+            document.querySelectorAll('.sidebar-link').forEach(function(l) { l.classList.remove('active'); });
+            var activeLink = document.querySelector('[data-page="' + page + '"]');
+            if (activeLink) activeLink.classList.add('active');
+            
+            if (page === 'services') {
+                updateServicesStats();
+                setTimeout(updateCharts, 200);
+            }
+        }
+
+        document.querySelectorAll('.sidebar-link[data-page]').forEach(function(link) {
+            link.addEventListener('click', function(e) {
+                e.preventDefault();
+                navigateTo(this.dataset.page);
+            });
+        });
+
+        function showDetail(cid, did) {
+            var d = allDemandes.find(function(item) { return item.id === did && item.clientId === cid; });
+            if (!d) return;
+            document.getElementById('modalContent').innerHTML = 
+                '<h4><i class="bi bi-info-circle"></i> Détail de la demande</h4><hr>' +
+                '<p><strong>Réf :</strong> ' + escapeHtml(d.id) + '</p>' +
+                '<p><strong>Client :</strong> ' + escapeHtml(d.clientNom) + '</p>' +
+                '<p><strong>Tél :</strong> ' + escapeHtml(d.clientTéléphone) + '</p>' +
+                '<p><strong>Email :</strong> ' + escapeHtml(d.clientEmail) + '</p>' +
+                '<p><strong>Service :</strong> ' + escapeHtml(d.service) + '</p>' +
+                '<p><strong>Urgence :</strong> ' + escapeHtml(d.urgence) + '</p>' +
+                '<p><strong>Statut :</strong> <span class="badge bg-' + statusColor(d.statut) + '">' + statusLabel(d.statut) + '</span></p>' +
+                '<p><strong>Description :</strong> ' + escapeHtml(d.description) + '</p>' +
+                '<p><strong>Adresse :</strong> ' + escapeHtml(d.adresse) + '</p>' +
+                '<p><strong>Date :</strong> ' + formatDate(d.date) + '</p>' +
+                '<button class="btn btn-primary mt-3" onclick="closeModal()"><i class="bi bi-x-circle"></i> Fermer</button>';
+            document.getElementById('modalBackdrop').classList.add('active');
+        }
+
+        function showMessage(id) {
+            var m = allMessages.find(function(item) { return item.id === id; });
+            if (!m) return;
+            db.collection('contacts').doc(id).update({ lu: true }).catch(function(error) { console.error('Erreur marquage lu:', error); });
+            m.lu = true;
+            updateMessagesTable();
+            updateDashboard();
+            document.getElementById('modalContent').innerHTML =
+                '<h4><i class="bi bi-envelope"></i> Message</h4><hr>' +
+                '<p><strong>Nom :</strong> ' + escapeHtml(m.nom) + '</p>' +
+                '<p><strong>Tél :</strong> ' + escapeHtml(m.téléphone) + '</p>' +
+                '<p><strong>Email :</strong> ' + escapeHtml(m.email) + '</p>' +
+                '<p><strong>Service :</strong> ' + escapeHtml(m.service) + '</p>' +
+                '<p><strong>Adresse :</strong> ' + escapeHtml(m.adresse) + '</p>' +
+                '<p><strong>Urgence :</strong> ' + escapeHtml(m.urgence) + '</p>' +
+                '<p><strong>Description :</strong> ' + escapeHtml(m.description) + '</p>' +
+                '<p><strong>Date :</strong> ' + formatDate(m.date) + '</p>' +
+                '<button class="btn btn-primary mt-3" onclick="closeModal()"><i class="bi bi-x-circle"></i> Fermer</button>';
+            document.getElementById('modalBackdrop').classList.add('active');
+        }
+
+        function showCreateFacture() {
+
+            if (typeof FacturationAPI === 'undefined' || !FacturationAPI.createFacture) {
+                document.getElementById('modalContent').innerHTML =
+                    '<h4><i class="bi bi-exclamation-triangle"></i> Module indisponible</h4><hr>' +
+                    '<p class="text-muted">Le module de facturation n\'est pas chargé. Vérifiez que payment.js est bien inclus.</p>' +
+                    '<button type="button" class="btn btn-secondary" onclick="closeModal()"><i class="bi bi-x"></i> Fermer</button>';
+                document.getElementById('modalBackdrop').classList.add('active');
+                return;
+            }
+
+            if (!allClients.length) {
+                document.getElementById('modalContent').innerHTML =
+                    '<h4><i class="bi bi-plus-circle"></i> Créer une facture</h4><hr>' +
+                    '<p class="text-muted"><i class="bi bi-exclamation-circle"></i> Aucun client enregistré. Ajoutez d\'abord un client.</p>' +
+                    '<button type="button" class="btn btn-secondary" onclick="closeModal()"><i class="bi bi-x"></i> Fermer</button>';
+                document.getElementById('modalBackdrop').classList.add('active');
+                return;
+            }
+            document.getElementById('modalContent').innerHTML =
+                '<h4><i class="bi bi-plus-circle"></i> Créer une facture</h4><hr>' +
+                '<form onsubmit="return createFacture(event)">' +
+                    '<div class="mb-3"><label class="form-label"><i class="bi bi-person"></i> Client</label>' +
+                    '<select class="form-control" id="fClient" required>' +
+                        allClients.map(function(c) { return '<option value="' + c.id + '">' + escapeHtml(c.nom) + ' - ' + escapeHtml(c.email) + '</option>'; }).join('') +
+                    '</select></div>' +
+                    '<div class="mb-3"><label class="form-label"><i class="bi bi-tools"></i> Service</label>' +
+                    '<input type="text" class="form-control" id="fService" placeholder="Ex: Installation Windows 11" required></div>' +
+                    '<div class="mb-3"><label class="form-label"><i class="bi bi-coin"></i> Montant (FCFA)</label>' +
+                    '<input type="number" class="form-control" id="fMontant" min="1" step="1" placeholder="Ex: 25000" required></div>' +
+                    '<div class="mb-3"><label class="form-label"><i class="bi bi-file-text"></i> Description</label>' +
+                    '<textarea class="form-control" id="fDesc" rows="2" placeholder="Détails de la prestation..."></textarea></div>' +
+                    '<button type="submit" class="btn btn-primary"><i class="bi bi-check"></i> Créer la facture</button>' +
+                    '<button type="button" class="btn btn-secondary ms-2" onclick="closeModal()"><i class="bi bi-x"></i> Annuler</button>' +
+                '</form>';
+            document.getElementById('modalBackdrop').classList.add('active');
+        }
+
+        function createFacture(e) {
+            e.preventDefault();
+            var btn = e.target.querySelector('button[type="submit"]');
+            var cid = document.getElementById('fClient').value;
+            var c = allClients.find(function(x) { return x.id === cid; });
+            
+            if (!c) {
+                alert('❌ Client introuvable.');
+                return false;
+            }
+            
+            var montantValue = parseInt(document.getElementById('fMontant').value, 10);
+            if (isNaN(montantValue) || montantValue <= 0) {
+                alert('❌ Montant invalide.');
+                return false;
+            }
+            
+            if (typeof FacturationAPI === 'undefined' || !FacturationAPI.createFacture) {
+                alert('❌ Le module de facturation n\'est pas disponible.');
+                return false;
+            }
+            
+            if (btn) {
+                btn.disabled = true;
+                btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Création...';
+            }
+            
+            FacturationAPI.createFacture({
+                clientId: cid,
+                clientNom: c.nom,
+                clientEmail: c.email,
+                clientTéléphone: c.téléphone,
+                service: document.getElementById('fService').value,
+                montant: montantValue,
+                description: document.getElementById('fDesc').value
+            })
+            .then(function(result) {
+                if (result && result.success) {
+                    allFactures.unshift(result.data);
+                    updateFacturesTable();
+                    closeModal();
+                } else {
+                    alert('❌ Erreur : ' + (result && result.error ? result.error : 'création impossible.'));
+                    if (btn) {
+                        btn.disabled = false;
+                        btn.innerHTML = '<i class="bi bi-check"></i> Créer la facture';
+                    }
+                }
+            })
+            .catch(function(error) {
+                console.error('❌ Erreur création facture:', error);
+                alert('❌ Erreur lors de la création de la facture.');
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-check"></i> Créer la facture';
+                }
+            });
+            return false;
+        }
+
+        function closeModal() {
+            document.getElementById('modalBackdrop').classList.remove('active');
+        }
+
+        document.getElementById('modalBackdrop').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        function listenRealtime() {
+            if (realtimeListenersActive) return;
+            realtimeListenersActive = true;
+
+            db.collectionGroup('demandes').orderBy('date', 'desc')
+                .onSnapshot(function() { 
+                    console.log('🔄 Mise à jour demandes en temps réel');
+                    loadAllData(); 
+                }, function(error) { 
+                    console.error('Erreur écoute demandes:', error); 
+                });
+
+            db.collection('contacts').orderBy('date', 'desc')
+                .onSnapshot(function() { 
+                    console.log('🔄 Mise à jour messages en temps réel');
+                    loadAllData(); 
+                }, function(error) { 
+                    console.error('Erreur écoute contacts:', error); 
+                });
+
+            db.collection('commentaires').orderBy('date', 'desc')
+                .onSnapshot(function() { 
+                    console.log('🔄 Mise à jour commentaires en temps réel');
+                    loadAllData(); 
+                }, function(error) { 
+                    console.error('Erreur écoute commentaires:', error); 
+                });
+
+            db.collection('factures').orderBy('date', 'desc')
+                .onSnapshot(function() { 
+                    console.log('🔄 Mise à jour factures en temps réel');
+                    loadAllData(); 
+                }, function(error) { 
+                    console.error('Erreur écoute factures:', error); 
+                });
+        }
+
+        console.log('🚀 Administration chargée');
+    </script>
+</body>
+</html>

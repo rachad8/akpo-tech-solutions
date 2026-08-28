@@ -1,0 +1,26 @@
+# ============================================
+# CLIENT - Fichier .htaccess
+# Protection de l'espace client
+# ============================================
+
+# Bloquer l'accès public au dossier client
+Order Deny,Allow
+Deny from all
+
+# Autoriser l'accès depuis le site (pour les redirections)
+# Allow from 127.0.0.1
+
+# Empêcher le listing des fichiers
+Options -Indexes
+
+# Bloquer l'accès aux fichiers sensibles dans client
+<FilesMatch "^(\.env|\.htaccess|\.htpasswd|config\.php|config\.js|settings\.php|settings\.js)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Rediriger les tentatives d'accès direct aux fichiers
+<Files ~ "\.(php|ini|log|sql|db|sh|pl|py)$">
+    Order Allow,Deny
+    Deny from all
+</Files>

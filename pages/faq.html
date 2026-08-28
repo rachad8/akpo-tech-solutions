@@ -1,0 +1,543 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>FAQ informatique | AKPO TECH SOLUTIONS</title>
+    <meta name="description" content="Réponses aux questions fréquentes sur le dépannage informatique, les délais d’intervention, les paiements, la récupération de données et les zones couvertes.">
+    <meta name="keywords" content="FAQ maintenance informatique, questions dépannage PC, tarifs informatique, installation Windows">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    
+    <link rel="icon" type="image/png" href="../assets/logo/logo.png">
+    <meta name="theme-color" content="#3B82F6">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/reset.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/animations.css">
+    <link rel="stylesheet" href="../assets/css/responsive.css">
+    
+    
+    
+    <style>
+        .faq-category-tag {
+            display: inline-block;
+            padding: 2px 12px;
+            border-radius: 20px;
+            font-size: 0.65rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+        }
+        .faq-category-tag.services { background: #EFF6FF; color: #3B82F6; }
+        .faq-category-tag.tarifs { background: #FEF3C7; color: #D97706; }
+        .faq-category-tag.interventions { background: #D1FAE5; color: #059669; }
+        .faq-category-tag.compte { background: #F3E8FF; color: #7C3AED; }
+        
+        .faq-item {
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            margin-bottom: 12px;
+            background: white;
+            transition: all 0.3s ease;
+            overflow: hidden;
+        }
+        .faq-item:hover {
+            border-color: #3B82F6;
+            box-shadow: 0 2px 12px rgba(0,0,0,0.04);
+        }
+        .faq-item .faq-question {
+            padding: 16px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-weight: 600;
+            color: #0F172A;
+            transition: all 0.2s;
+            gap: 12px;
+        }
+        .faq-item .faq-question:hover {
+            color: #3B82F6;
+        }
+        .faq-item .faq-question i {
+            transition: transform 0.3s ease;
+            font-size: 1.2rem;
+            color: #94A3B8;
+            flex-shrink: 0;
+        }
+        .faq-item.open .faq-question i {
+            transform: rotate(180deg);
+            color: #3B82F6;
+        }
+        .faq-item .faq-question .faq-title {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        .faq-item .faq-question .faq-title .faq-icon {
+            color: #3B82F6;
+            font-size: 1.1rem;
+            width: 24px;
+            text-align: center;
+        }
+        .faq-item .faq-answer {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s ease, padding 0.3s ease;
+            padding: 0 20px;
+            color: #475569;
+            font-size: 0.92rem;
+            line-height: 1.6;
+        }
+        .faq-item.open .faq-answer {
+            max-height: 300px;
+            padding: 0 20px 20px 20px;
+        }
+        .faq-item .faq-answer p {
+            margin-bottom: 0;
+        }
+        .faq-item .faq-answer .faq-highlight {
+            background: #EFF6FF;
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-top: 8px;
+            border-left: 3px solid #3B82F6;
+            font-size: 0.85rem;
+        }
+        
+        .faq-search-input {
+            border-radius: 50px;
+            padding: 12px 20px;
+            border: 2px solid #E2E8F0;
+            font-size: 0.95rem;
+            transition: all 0.3s;
+        }
+        .faq-search-input:focus {
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+        .faq-search-input::placeholder {
+            color: #94A3B8;
+        }
+        
+        .faq-category-filter {
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 50px;
+            border: 1px solid #E2E8F0;
+            background: white;
+            font-size: 0.8rem;
+            font-weight: 500;
+            transition: all 0.2s;
+            color: #64748B;
+        }
+        .faq-category-filter:hover {
+            border-color: #3B82F6;
+            color: #3B82F6;
+        }
+        .faq-category-filter.active {
+            background: #3B82F6;
+            color: white;
+            border-color: #3B82F6;
+        }
+        
+        .faq-stats {
+            background: #F8FAFC;
+            border-radius: 12px;
+            padding: 16px 24px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .faq-stats .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            font-size: 0.85rem;
+            color: #64748B;
+        }
+        .faq-stats .stat-item strong {
+            color: #0F172A;
+            font-size: 1.1rem;
+        }
+        .faq-stats .stat-item i {
+            color: #3B82F6;
+        }
+        
+        .no-results {
+            text-align: center;
+            padding: 40px 20px;
+            color: #94A3B8;
+        }
+        .no-results i {
+            font-size: 3rem;
+            margin-bottom: 16px;
+            display: block;
+        }
+    </style>
+    <link rel="canonical" href="https://akpotechsolutions.com/pages/faq.html">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="FAQ informatique | AKPO TECH SOLUTIONS">
+    <meta property="og:description" content="Réponses aux questions fréquentes sur le dépannage informatique, les délais d’intervention, les paiements, la récupération de données et les zones couvertes.">
+    <meta property="og:url" content="https://akpotechsolutions.com/pages/faq.html">
+    <meta property="og:image" content="https://akpotechsolutions.com/assets/images/hero/hero-services.jpg">
+    <meta property="og:locale" content="fr_FR">
+    <meta property="og:site_name" content="AKPO TECH SOLUTIONS">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="FAQ informatique | AKPO TECH SOLUTIONS">
+    <meta name="twitter:description" content="Réponses aux questions fréquentes sur le dépannage informatique, les délais d’intervention, les paiements, la récupération de données et les zones couvertes.">
+    <meta name="twitter:image" content="https://akpotechsolutions.com/assets/images/hero/hero-services.jpg">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","@id":"https://akpotechsolutions.com/#business","name":"AKPO TECH SOLUTIONS","url":"https://akpotechsolutions.com/","logo":"https://akpotechsolutions.com/assets/logo/logo.png","image":"https://akpotechsolutions.com/assets/images/hero/hero-accueil.jpg","description":"Maintenance et dépannage informatique à Cotonou, Calavi et environs.","telephone":"+2290190182549","email":"contact@akpotechsolutions.com","address":{"@type":"PostalAddress","streetAddress":"Calavi Zopah","addressLocality":"Calavi","addressCountry":"BJ"},"areaServed":["Cotonou","Calavi","Bénin"],"openingHours":"Mo-Sa 08:00-19:00","priceRange":"5000-50000 FCFA","sameAs":["https://www.facebook.com/akpotechsolutions"]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"FAQPage","name":"FAQ informatique | AKPO TECH SOLUTIONS","url":"https://akpotechsolutions.com/pages/faq.html","description":"Réponses aux questions fréquentes sur le dépannage informatique, les délais d’intervention, les paiements, la récupération de données et les zones couvertes.","isPartOf":{"@type":"WebSite","name":"AKPO TECH SOLUTIONS","url":"https://akpotechsolutions.com/"}}</script>
+    <link rel="manifest" href="../site.webmanifest">
+</head>
+<body>
+
+    <div class="loader" id="loader"><div class="loader-spinner"></div></div>
+    <div class="progress-bar" id="progressBar" style="width:0%;"></div>
+
+    
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="../index.html">
+                <img src="../assets/logo/logo.png" alt="AKPO TECH SOLUTIONS" height="44">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Menu principal">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center gap-2">
+                    <li class="nav-item"><a class="nav-link" href="../index.html">Accueil</a></li>
+                    <li class="nav-item"><a class="nav-link" href="services.html">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="projects.html">Projets</a></li>
+                    <li class="nav-item"><a class="nav-link" href="about.html">À Propos</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="faq.html">FAQ</a></li>
+                    <li class="nav-item"><a class="nav-link" href="contact.html">Contact</a></li>
+                    <li class="nav-item"><a class="btn btn-primary btn-sm" href="contact.html"><i class="bi bi-chat-left-text"></i> Demander un devis</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    
+    <section style="padding-top:calc(var(--navbar-height) + 40px);padding-bottom:60px;background:var(--gradient-hero);">
+        <div class="container text-center">
+            <span class="section-tag">FAQ</span>
+            <h1 class="section-title">Foire aux questions</h1>
+            <p class="section-description">Trouvez rapidement des réponses à vos questions sur nos services, tarifs et interventions.</p>
+        </div>
+    </section>
+
+    
+    <section class="section bg-white" style="padding-top:0;">
+        <div class="container" style="max-width:900px;">
+            
+            
+            <div class="mb-4" data-animate="fade-up">
+                <div class="input-group">
+                    <span class="input-group-text bg-white border-end-0" style="border-radius:50px 0 0 50px;border:2px solid #E2E8F0;border-right:none;">
+                        <i class="bi bi-search text-muted"></i>
+                    </span>
+                    <input type="text" class="form-control faq-search-input" id="faqSearch" placeholder="Rechercher une question..." style="border-radius:0 50px 50px 0;border-left:none;" oninput="filterFaq()">
+                </div>
+            </div>
+
+            
+            <div class="d-flex gap-2 flex-wrap mb-4" data-animate="fade-up">
+                <button class="faq-category-filter active" data-category="tous" onclick="filterByCategory('tous', this)">Tous</button>
+                <button class="faq-category-filter" data-category="services" onclick="filterByCategory('services', this)">🔧 Services</button>
+                <button class="faq-category-filter" data-category="tarifs" onclick="filterByCategory('tarifs', this)">💰 Tarifs</button>
+                <button class="faq-category-filter" data-category="interventions" onclick="filterByCategory('interventions', this)">⏱️ Interventions</button>
+                <button class="faq-category-filter" data-category="compte" onclick="filterByCategory('compte', this)">👤 Compte</button>
+            </div>
+
+            
+            <div class="faq-stats mb-4" data-animate="fade-up">
+                <div class="stat-item"><i class="bi bi-question-circle"></i> <strong id="faqTotal">7</strong> questions disponibles</div>
+                <div class="stat-item"><i class="bi bi-tag"></i> <span id="faqCategories">5</span> catégories</div>
+                <div class="stat-item"><i class="bi bi-clock"></i> Dernière mise à jour : <span id="faqUpdate">Janvier 2024</span></div>
+            </div>
+
+            
+            <div id="faqList">
+                
+            </div>
+
+            
+            <div id="noResults" class="no-results" style="display:none;">
+                <i class="bi bi-search"></i>
+                <h5>Aucune question trouvée</h5>
+                <p class="text-muted">Essayez avec d'autres mots-clés ou <a href="contact.html">contactez-nous</a> directement.</p>
+            </div>
+
+            
+            <div class="text-center mt-5" data-animate="fade-up">
+                <p class="text-muted">Vous n'avez pas trouvé votre réponse ?</p>
+                <a href="contact.html" class="btn btn-primary">
+                    <i class="bi bi-chat-left-text"></i> Contactez-nous
+                </a>
+            </div>
+        </div>
+    </section>
+
+    
+    <section class="section bg-section text-center">
+        <div class="container">
+            <div class="p-5 rounded-4" style="background:var(--gradient-primary);" data-animate="scale">
+                <h2 class="text-white mb-3">Une question spécifique ?</h2>
+                <p class="text-white mb-4 opacity-75">Notre équipe est là pour vous répondre personnellement.</p>
+                <a href="contact.html" class="btn btn-white btn-lg">
+                    <i class="bi bi-chat-left-text"></i> Nous contacter
+                </a>
+            </div>
+        </div>
+    </section>
+
+    
+    <footer class="footer">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <img src="../assets/logo/logo.png" alt="AKPO TECH" style="height:40px;margin-bottom:12px;">
+                    <p>Maintenance et dépannage informatique. Intervention à Cotonou, Calavi et environs.</p>
+                    <div class="d-flex gap-3 mt-3">
+                        <a href="https://wa.me/2290190182549" class="text-white" target="_blank" rel="noopener noreferrer"><i class="bi bi-whatsapp fs-4"></i></a>
+                        <a href="https://www.facebook.com/akpotechsolutions" class="text-white" target="_blank" rel="noopener noreferrer"><i class="bi bi-facebook fs-4"></i></a>
+                        <a href="mailto:contact@akpotechsolutions.com" class="text-white"><i class="bi bi-envelope fs-4"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <div class="footer-title">Navigation</div>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="../index.html">Accueil</a>
+                        <a href="services.html">Services</a>
+                        <a href="projects.html">Projets</a>
+                        <a href="contact.html">Contact</a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <div class="footer-title">Liens</div>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="faq.html">FAQ</a>
+                        <a href="privacy-policy.html">Confidentialité</a>
+                        <a href="contact.html">Demander un devis</a>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <div class="footer-title">Contact</div>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="tel:+2290190182549"><i class="bi bi-téléphone"></i> 01 90 18 25 49</a>
+                        <a href="tel:+2290144791362"><i class="bi bi-téléphone"></i> 01 44 79 13 62</a>
+                        <a href="mailto:contact@akpotechsolutions.com"><i class="bi bi-envelope"></i> contact@akpotechsolutions.com</a>
+                        <a href="#" target="_blank" rel="noopener noreferrer"><i class="bi bi-geo-alt"></i> Calavi Zopah, Cotonou</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 AKPO TECH SOLUTIONS. Tous droits réservés. 
+                    
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    
+    <button class="back-to-top" id="backToTop"><i class="bi bi-chevron-up"></i></button>
+
+    
+    <div id="chatbotContainer"></div>
+
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/navbar.js"></script>
+    <script src="../assets/js/scroll.js"></script>
+    <script src="../assets/js/chatbot.js"></script>
+
+    <script>
+
+        const faqData = [
+            {
+                id: 1,
+                question: "Quels sont vos délais d'intervention ?",
+                answer: "Nous intervenons généralement sous 24h à Cotonou, Calavi et environs. Pour les urgences, nous pouvons intervenir le jour même. En cas de situation critique, contactez-nous directement au 01 90 18 25 49.",
+                category: "interventions",
+                icon: "bi-clock"
+            },
+            {
+                id: 2,
+                question: "Quels sont vos tarifs ?",
+                answer: "Nos tarifs varient selon le type d'intervention. Les frais de déplacement sont à partir de 5000 FCFA, déduits si l'intervention est confirmée. Un devis gratuit vous est fourni avant toute intervention.",
+                category: "tarifs",
+                icon: "bi-coin"
+            },
+            {
+                id: 3,
+                question: "Quelles zones couvrez-vous ?",
+                answer: "Nous intervenons principalement à Cotonou, Calavi Zopah et environs. Pour les zones plus éloignées, contactez-nous pour vérifier la disponibilité. Nous nous déplaçons également sur demande pour des interventions spéciales.",
+                category: "interventions",
+                icon: "bi-geo-alt"
+            },
+            {
+                id: 4,
+                question: "Proposez-vous des contrats de maintenance ?",
+                answer: "Oui, nous proposons des contrats de maintenance préventive pour les entreprises. Ces contrats incluent des vérifications régulières, des mises à jour, un support prioritaire et des rapports détaillés.",
+                category: "services",
+                icon: "bi-clipboard-check"
+            },
+            {
+                id: 5,
+                question: "Quels modes de paiement acceptez-vous ?",
+                answer: "Nous acceptons le paiement en espèces, par Mobile Money (MTN, Moov, Celcom) et par virement bancaire. Le paiement se fait après l'intervention et votre satisfaction.",
+                category: "tarifs",
+                icon: "bi-credit-card"
+            },
+            {
+                id: 6,
+                question: "Pouvez-vous récupérer des données perdues ?",
+                answer: "Oui, nous proposons un service de récupération de données sur disques durs endommagés ou fichiers supprimés accidentellement. Le taux de réussite dépend de l'état du support. Un diagnostic gratuit est effectué avant toute intervention.",
+                category: "services",
+                icon: "bi-database"
+            },
+            {
+                id: 7,
+                question: "Installez-vous des licences Windows originales ?",
+                answer: "Oui, nous installons uniquement des licences Windows et Microsoft Office authentiques et légales. Nous vous fournissons une facture avec le numéro de licence pour votre garantie.",
+                category: "services",
+                icon: "bi-windows"
+            },
+            {
+                id: 8,
+                question: "Comment créer un compte client ?",
+                answer: "Pour créer un compte client, rendez-vous sur la page d'inscription. Vous pourrez ensuite suivre vos demandes, consulter vos factures et gérer vos informations personnelles en ligne.",
+                category: "compte",
+                icon: "bi-person-plus"
+            },
+            {
+                id: 9,
+                question: "Comment suivre l'avancement de ma demande ?",
+                answer: "Une fois connecté à votre espace client, vous pouvez suivre l'avancement de vos demandes en temps réel. Le statut de votre demande (En attente, En cours, Terminé) est mis à jour automatiquement.",
+                category: "compte",
+                icon: "bi-list-check"
+            },
+            {
+                id: 10,
+                question: "Proposez-vous des services d'urgence ?",
+                answer: "Oui, nous proposons des interventions d'urgence 7j/7. Pour les situations critiques (panne grave, perte de données, virus), contactez-nous immédiatement au 01 90 18 25 49.",
+                category: "interventions",
+                icon: "bi-exclamation-triangle"
+            }
+        ];
+
+        let currentCategory = 'tous';
+        let currentSearch = '';
+
+        function renderFaq(data) {
+            const container = document.getElementById('faqList');
+            const noResults = document.getElementById('noResults');
+
+            if (data.length === 0) {
+                container.innerHTML = '';
+                noResults.style.display = 'block';
+                return;
+            }
+
+            noResults.style.display = 'none';
+
+            container.innerHTML = data.map((item, index) => `
+                <div class="faq-item" data-category="${item.category}" data-animate="fade-up" style="animation-delay: ${index * 0.05}s;">
+                    <div class="faq-question" onclick="toggleFaq(this)">
+                        <div class="faq-title">
+                            <span class="faq-icon"><i class="bi ${item.icon}"></i></span>
+                            <span>${item.question}</span>
+                            <span class="faq-category-tag ${item.category}">${getCategoryLabel(item.category)}</span>
+                        </div>
+                        <i class="bi bi-chevron-down"></i>
+                    </div>
+                    <div class="faq-answer">
+                        <p>${item.answer}</p>
+                        ${item.category === 'tarifs' ? `<div class="faq-highlight"><i class="bi bi-info-circle text-primary"></i> Un devis gratuit est disponible sur demande.</div>` : ''}
+                        ${item.category === 'interventions' ? `<div class="faq-highlight"><i class="bi bi-téléphone text-primary"></i> Pour une urgence : <strong>01 90 18 25 49</strong></div>` : ''}
+                    </div>
+                </div>
+            `).join('');
+
+            document.getElementById('faqTotal').textContent = data.length;
+        }
+
+        function toggleFaq(element) {
+            const parent = element.closest('.faq-item');
+            const isOpen = parent.classList.contains('open');
+
+            document.querySelectorAll('.faq-item.open').forEach(item => {
+                if (item !== parent) item.classList.remove('open');
+            });
+            
+            parent.classList.toggle('open');
+        }
+
+        function getCategoryLabel(category) {
+            const labels = {
+                'services': 'Services',
+                'tarifs': 'Tarifs',
+                'interventions': 'Interventions',
+                'compte': 'Compte'
+            };
+            return labels[category] || category;
+        }
+
+        function filterByCategory(category, element) {
+            currentCategory = category;
+
+            document.querySelectorAll('.faq-category-filter').forEach(btn => {
+                btn.classList.remove('active');
+            });
+            if (element) element.classList.add('active');
+            
+            applyFilters();
+        }
+
+        function filterFaq() {
+            currentSearch = document.getElementById('faqSearch').value.toLowerCase().trim();
+            applyFilters();
+        }
+
+        function applyFilters() {
+            let filtered = faqData;
+
+            if (currentCategory !== 'tous') {
+                filtered = filtered.filter(item => item.category === currentCategory);
+            }
+
+            if (currentSearch) {
+                filtered = filtered.filter(item => 
+                    item.question.toLowerCase().includes(currentSearch) ||
+                    item.answer.toLowerCase().includes(currentSearch)
+                );
+            }
+
+            renderFaq(filtered);
+        }
+
+        document.addEventListener('DOMContentLoaded', function() {
+            renderFaq(faqData);
+
+            setTimeout(() => {
+                const firstItem = document.querySelector('.faq-item');
+                if (firstItem) {
+                    firstItem.classList.add('open');
+                    firstItem.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                }
+            }, 500);
+        });
+    </script>
+</body>
+</html>

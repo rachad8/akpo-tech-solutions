@@ -1,0 +1,436 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Factures | Administration AKPO TECH</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="../assets/logo/logo.png">
+    <meta name="theme-color" content="#3B82F6">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/reset.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    
+    <style>
+        .badge-notif {
+            font-size: 0.65rem !important;
+            padding: 3px 8px;
+            border-radius: 20px;
+            margin-left: auto;
+        }
+        .badge-notif.bg-danger { background: #EF4444 !important; }
+        .btn-action { padding: 4px 8px; font-size: 0.8rem; }
+        .stat-card-clickable { cursor: pointer; transition: all 0.2s; }
+        .stat-card-clickable:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        
+        #factureModal {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+        #factureModal.active { display: flex; }
+        .modal-content-facture {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .toast-success { background: #10B981; }
+        .toast-error { background: #EF4444; }
+        .toast-info { background: #3B82F6; }
+        
+        .total-amount {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #0F172A;
+        }
+    </style>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="../assets/js/session-guard.js"></script>
+    <script src="../assets/js/payment.js"></script>
+</head>
+<body>
+
+<div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-brand">
+            <a href="../index.html"><img src="../assets/logo/logo.png" alt="AKPO TECH" style="height:36px;"></a>
+            <small style="color:#94A3B8;display:block;font-size:0.7rem;">Administration</small>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="sidebar-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="demandes.html" class="sidebar-link"><i class="bi bi-list-check"></i> Demandes</a>
+            <a href="messages.html" class="sidebar-link"><i class="bi bi-envelope"></i> Messages</a>
+            <a href="clients.html" class="sidebar-link"><i class="bi bi-people"></i> Clients</a>
+            <a href="invoices.html" class="sidebar-link active"><i class="bi bi-receipt"></i> Factures</a>
+            <a href="commentaires.html" class="sidebar-link"><i class="bi bi-chat-square-text"></i> Commentaires</a>
+            <a href="statistiques.html" class="sidebar-link"><i class="bi bi-bar-chart"></i> Statistiques</a>
+            <a href="settings.html" class="sidebar-link"><i class="bi bi-gear"></i> Paramètres</a>
+        </nav>
+        <div style="margin-top:auto;">
+            <a href="../index.html" class="sidebar-link" style="color:#94A3B8;"><i class="bi bi-arrow-left"></i> Retour au site</a>
+            <button class="sidebar-logout" onclick="AkpoGuard.logout('../auth/admin-login.html')"><i class="bi bi-box-arrow-right"></i> Déconnexion</button>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dashboard-header">
+            <h1><i class="bi bi-receipt"></i> Gestion des factures</h1>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <input type="text" class="form-control form-control-sm" placeholder="Rechercher..." id="searchFactures" oninput="filterFactures()" style="width:200px;">
+                <select class="form-select form-select-sm" id="filterStatus" onchange="filterFactures()" style="width:150px;">
+                    <option value="tous">Tous</option>
+                    <option value="payee">Payées</option>
+                    <option value="en-attente">En attente</option>
+                </select>
+                <button class="btn btn-success btn-sm" onclick="exportCSV()"><i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
+                <button class="btn btn-primary btn-sm" onclick="showCreateFacture()"><i class="bi bi-plus-circle"></i> Créer</button>
+            </div>
+        </div>
+
+        <div class="dashboard-stats">
+            <div class="dashboard-stat-card">
+                <div class="dashboard-stat-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-receipt"></i></div>
+                <div><div class="dashboard-stat-value" id="statTotal">0</div><div class="dashboard-stat-label">Total factures</div></div>
+            </div>
+            <div class="dashboard-stat-card">
+                <div class="dashboard-stat-icon bg-success bg-opacity-10 text-success"><i class="bi bi-check-circle"></i></div>
+                <div><div class="dashboard-stat-value" id="statPayées">0</div><div class="dashboard-stat-label">Payées</div></div>
+            </div>
+            <div class="dashboard-stat-card stat-card-clickable" onclick="filterAttente()">
+                <div class="dashboard-stat-icon bg-warning bg-opacity-10 text-warning"><i class="bi bi-clock"></i></div>
+                <div><div class="dashboard-stat-value" id="statAttente">0</div><div class="dashboard-stat-label">En attente</div></div>
+            </div>
+            <div class="dashboard-stat-card">
+                <div class="dashboard-stat-icon bg-info bg-opacity-10 text-info"><i class="bi bi-coin"></i></div>
+                <div><div class="dashboard-stat-value" id="statTotalMontant">0 FCFA</div><div class="dashboard-stat-label">Montant total</div></div>
+            </div>
+        </div>
+
+        <div class="dashboard-table-card">
+            <div class="dashboard-table-header">
+                <h3><i class="bi bi-list-ul"></i> Liste des factures</h3>
+                <span class="text-muted" id="facturesCount">0 facture(s)</span>
+            </div>
+            <div class="table-responsive">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>N°</th>
+                            <th>Client</th>
+                            <th>Email</th>
+                            <th>Service</th>
+                            <th>Montant</th>
+                            <th>Statut</th>
+                            <th>Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="facturesTable">
+                        <tr><td colspan="8" class="text-center text-muted py-4"><i class="bi bi-inbox fs-1 d-block"></i><p class="mt-2">Aucune facture trouvée</p></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
+</div>
+
+<div id="factureModal">
+    <div class="modal-content-facture">
+        <h4 class="mb-3"><i class="bi bi-plus-circle"></i> Créer une facture</h4>
+        <hr>
+        <form id="factureForm">
+            <div class="mb-3">
+                <label class="form-label"><i class="bi bi-person"></i> Client</label>
+                <select id="factureClient" class="form-control" required></select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label"><i class="bi bi-tools"></i> Service</label>
+                <input type="text" id="factureService" class="form-control" placeholder="Ex: Installation Windows 11" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label"><i class="bi bi-coin"></i> Montant (FCFA)</label>
+                <input type="number" id="factureMontant" class="form-control" placeholder="Ex: 25000" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label"><i class="bi bi-file-text"></i> Description</label>
+                <textarea id="factureDesc" class="form-control" rows="2" placeholder="Détails de la prestation..."></textarea>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check"></i> Créer</button>
+            <button type="button" class="btn btn-secondary ms-2" onclick="closeModal()"><i class="bi bi-x"></i> Annuler</button>
+        </form>
+    </div>
+</div>
+
+<div id="toast" class="toast-notification"></div>
+
+<script>
+
+    
+    
+    
+    
+    let allFactures = [], allClients = [], allDemandes = [];
+
+    AkpoGuard.requireAdmin(function(user, profile) {
+        loadAll();
+        listenRealtime();
+    });
+
+    async function loadAll() {
+        const cs = await db.collection('clients').get();
+        allClients = [];
+        cs.forEach(doc => allClients.push({ id: doc.id, ...doc.data() }));
+        document.getElementById('factureClient').innerHTML = allClients.map(c => 
+            `<option value="${c.id}">${c.nom || 'Inconnu'} - ${c.email || ''}</option>`
+        ).join('');
+
+        const fs = await FacturationAPI.getAllFactures();
+        allFactures = fs.success ? fs.data : [];
+
+        const cs2 = await db.collection('clients').get();
+        allDemandes = [];
+        for (const cd of cs2.docs) {
+            const ds = await db.collection('clients').doc(cd.id).collection('demandes').get();
+            ds.forEach(d => allDemandes.push({ id: d.id, ...d.data() }));
+        }
+
+        updateStats();
+        renderTable();
+        updateBadges();
+    }
+
+    function updateStats() {
+        const total = allFactures.length;
+        const payees = allFactures.filter(f => f.statut === 'payee').length;
+        const attente = allFactures.filter(f => f.statut === 'en-attente').length;
+        const totalMontant = allFactures.reduce((sum, f) => sum + (f.montant || 0), 0);
+
+        document.getElementById('statTotal').textContent = total;
+        document.getElementById('statPayées').textContent = payees;
+        document.getElementById('statAttente').textContent = attente;
+        document.getElementById('statTotalMontant').textContent = totalMontant.toLocaleString() + ' FCFA';
+        document.getElementById('facturesCount').textContent = total + ' facture(s)';
+    }
+
+    function renderTable(filtered) {
+        const data = filtered || allFactures;
+        const tbody = document.getElementById('facturesTable');
+
+        if (data.length === 0) {
+            tbody.innerHTML = `<tr><td colspan="8" class="text-center text-muted py-4"><i class="bi bi-inbox fs-1 d-block"></i><p class="mt-2">Aucune facture trouvée</p></td></tr>`;
+            return;
+        }
+
+        tbody.innerHTML = data.map(f => `
+            <tr>
+                <td><strong>${f.id}</strong></td>
+                <td>${f.clientNom}</td>
+                <td>${f.clientEmail}</td>
+                <td>${f.service}</td>
+                <td><strong>${f.montant?.toLocaleString()} FCFA</strong></td>
+                <td><span class="badge bg-${f.statut === 'payee' ? 'success' : 'warning'}">${f.statut === 'payee' ? 'Payée' : 'En attente'}</span></td>
+                <td>${formatDate(f.date)}</td>
+                <td>
+                    <button class="btn btn-sm btn-outline-primary btn-action" onclick="downloadPDF('${f.id}')" title="Télécharger"><i class="bi bi-download"></i></button>
+                    <button class="btn btn-sm btn-outline-secondary btn-action" onclick="sendEmail('${f.id}')" title="Envoyer"><i class="bi bi-envelope"></i></button>
+                    <button class="btn btn-sm btn-outline-success btn-action" onclick="markPaid('${f.id}')" title="Marquer payée"><i class="bi bi-check"></i></button>
+                    <button class="btn btn-sm btn-outline-danger btn-action" onclick="deleteFacture('${f.id}')" title="Supprimer"><i class="bi bi-trash"></i></button>
+                </td>
+            </tr>
+        `).join('');
+    }
+
+    function filterFactures() {
+        const s = document.getElementById('searchFactures').value.toLowerCase();
+        const st = document.getElementById('filterStatus').value;
+        renderTable(allFactures.filter(f =>
+            (f.clientNom.toLowerCase().includes(s) || f.id.toLowerCase().includes(s) || f.service.toLowerCase().includes(s)) &&
+            (st === 'tous' || f.statut === st)
+        ));
+    }
+
+    function filterAttente() {
+        document.getElementById('filterStatus').value = 'en-attente';
+        filterFactures();
+    }
+
+    function updateBadges() {
+
+    }
+
+    async function markPaid(id) {
+        const result = await FacturationAPI.updateStatut(id, 'payee');
+        if (result.success) {
+            const f = allFactures.find(f => f.id === id);
+            if (f) f.statut = 'payee';
+            updateStats();
+            renderTable();
+            showToast('Facture marquée comme payée', 'success');
+        } else {
+            showToast('Erreur : ' + result.error, 'error');
+        }
+    }
+
+    async function deleteFacture(id) {
+        if (!confirm('Supprimer cette facture ?')) return;
+        const result = await FacturationAPI.deleteFacture(id);
+        if (result.success) {
+            allFactures = allFactures.filter(f => f.id !== id);
+            updateStats();
+            renderTable();
+            showToast('Facture supprimée', 'info');
+        } else {
+            showToast('Erreur : ' + result.error, 'error');
+        }
+    }
+
+    function downloadPDF(id) {
+        const f = allFactures.find(f => f.id === id);
+        if (f) {
+            FacturationAPI.downloadFacturePDF(f);
+            showToast('Téléchargement de la facture ' + f.id, 'info');
+        }
+    }
+
+    function sendEmail(id) {
+        const f = allFactures.find(f => f.id === id);
+        if (f) {
+            if (!f.clientEmail) {
+                showToast('Ce client n\'a pas d\'email', 'error');
+                return;
+            }
+            FacturationAPI.sendFactureEmail(f);
+            showToast('Email envoyé à ' + f.clientEmail, 'success');
+        }
+    }
+
+    function showCreateFacture() {
+        document.getElementById('factureModal').style.display = 'flex';
+    }
+
+    function closeModal() {
+        document.getElementById('factureModal').style.display = 'none';
+    }
+
+    document.getElementById('factureModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    document.getElementById('factureForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const clientId = document.getElementById('factureClient').value;
+        const client = allClients.find(c => c.id === clientId);
+        
+        const result = await FacturationAPI.createFacture({
+            clientId: clientId,
+            clientNom: client.nom || 'Inconnu',
+            clientEmail: client.email || '',
+            clientTéléphone: client.téléphone || '',
+            service: document.getElementById('factureService').value,
+            montant: parseInt(document.getElementById('factureMontant').value),
+            description: document.getElementById('factureDesc').value
+        });
+        
+        if (result.success) {
+            this.reset();
+            closeModal();
+            allFactures.unshift(result.data);
+            updateStats();
+            renderTable();
+            showToast('Facture créée avec succès', 'success');
+        } else {
+            showToast('Erreur : ' + result.error, 'error');
+        }
+    });
+
+    function exportCSV() {
+        if (allFactures.length === 0) {
+            showToast('Aucune facture à exporter', 'error');
+            return;
+        }
+        
+        const headers = ['ID', 'Client', 'Email', 'Service', 'Montant', 'Statut', 'Date'];
+        const rows = allFactures.map(f => [
+            f.id,
+            f.clientNom,
+            f.clientEmail,
+            f.service,
+            f.montant || 0,
+            f.statut === 'payee' ? 'Payée' : 'En attente',
+            formatDate(f.date)
+        ]);
+        
+        const csv = [headers.join(','), ...rows.map(r => r.join(','))].join('\n');
+        const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        const link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = `factures_${new Date().toISOString().split('T')[0]}.csv`;
+        link.click();
+        URL.revokeObjectURL(link.href);
+        showToast('Export CSV effectué', 'success');
+    }
+
+    function showToast(message, type = 'info') {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = 'toast-notification toast-' + type + ' show';
+        clearTimeout(toast._timeout);
+        toast._timeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    function listenRealtime() {
+        db.collection('factures').orderBy('date', 'desc')
+            .onSnapshot(async () => {
+                const fs = await FacturationAPI.getAllFactures();
+                allFactures = fs.success ? fs.data : [];
+                updateStats();
+                renderTable();
+            });
+    }
+
+    function formatDate(d) {
+        if (!d) return '';
+        const dt = d.toDate ? d.toDate() : new Date(d);
+        return dt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+</script>
+
+</body>
+</html>

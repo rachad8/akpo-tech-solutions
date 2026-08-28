@@ -1,0 +1,553 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Contact et devis | AKPO TECH SOLUTIONS</title>
+    <meta name="description" content="Demandez une intervention ou un devis informatique à Cotonou, Calavi et environs. Contactez AKPO TECH SOLUTIONS par téléphone, WhatsApp ou formulaire.">
+    <meta name="keywords" content="contact maintenance informatique, dépannage PC Calavi, intervention informatique Cotonou, technicien informatique">
+    <meta name="robots" content="index, follow, max-image-preview:large">
+    
+    <link rel="icon" type="image/png" href="../assets/logo/logo.png">
+    <meta name="theme-color" content="#3B82F6">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/reset.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/animations.css">
+    <link rel="stylesheet" href="../assets/css/responsive.css">
+    
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="../assets/js/session-guard.js"></script>
+    
+    <style>
+        .contact-card {
+            background: white;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 24px 20px;
+            text-align: center;
+            height: 100%;
+            transition: all 0.3s ease;
+        }
+        .contact-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 8px 30px rgba(0,0,0,0.08);
+            border-color: #3B82F6;
+        }
+        .contact-card .contact-icon {
+            font-size: 2.5rem;
+            color: #3B82F6;
+            margin-bottom: 12px;
+        }
+        .contact-card h4 {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #0F172A;
+        }
+        .contact-card p {
+            font-size: 0.9rem;
+            color: #64748B;
+            margin-bottom: 0;
+        }
+        .contact-card a {
+            text-decoration: none;
+            font-weight: 500;
+        }
+        .contact-card .whatsapp a { color: #25D366; }
+        .contact-card .phone a { color: #3B82F6; }
+        .contact-card .email a { color: #EF4444; }
+        .contact-card .location a { color: #8B5CF6; }
+        
+        .map-container {
+            border-radius: 12px;
+            overflow: hidden;
+            border: 1px solid #E2E8F0;
+            height: 250px;
+            background: #F1F5F9;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #94A3B8;
+        }
+        .map-container i {
+            font-size: 3rem;
+        }
+        
+        .form-card {
+            background: white;
+            border: 1px solid #E2E8F0;
+            border-radius: 16px;
+            padding: 32px;
+        }
+        .form-card h3 {
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #0F172A;
+        }
+        .form-control {
+            border-radius: 8px;
+            border: 1px solid #E2E8F0;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+        }
+        .form-control:focus {
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+        .form-label {
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #475569;
+        }
+        .form-label .required {
+            color: #EF4444;
+        }
+        
+        .confirmation-icon {
+            font-size: 4rem;
+            color: #10B981;
+            margin-bottom: 16px;
+        }
+        
+        .captcha-question {
+            background: #F8FAFC;
+            padding: 12px 16px;
+            border-radius: 8px;
+            border: 1px solid #E2E8F0;
+            font-weight: 600;
+            color: #0F172A;
+        }
+        .captcha-question small {
+            font-weight: 400;
+            color: #94A3B8;
+        }
+    </style>
+    <link rel="canonical" href="https://akpotechsolutions.com/pages/contact.html">
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="Contact et devis | AKPO TECH SOLUTIONS">
+    <meta property="og:description" content="Demandez une intervention ou un devis informatique à Cotonou, Calavi et environs. Contactez AKPO TECH SOLUTIONS par téléphone, WhatsApp ou formulaire.">
+    <meta property="og:url" content="https://akpotechsolutions.com/pages/contact.html">
+    <meta property="og:image" content="https://akpotechsolutions.com/assets/images/hero/hero-accueil.jpg">
+    <meta property="og:locale" content="fr_FR">
+    <meta property="og:site_name" content="AKPO TECH SOLUTIONS">
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="Contact et devis | AKPO TECH SOLUTIONS">
+    <meta name="twitter:description" content="Demandez une intervention ou un devis informatique à Cotonou, Calavi et environs. Contactez AKPO TECH SOLUTIONS par téléphone, WhatsApp ou formulaire.">
+    <meta name="twitter:image" content="https://akpotechsolutions.com/assets/images/hero/hero-accueil.jpg">
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"LocalBusiness","@id":"https://akpotechsolutions.com/#business","name":"AKPO TECH SOLUTIONS","url":"https://akpotechsolutions.com/","logo":"https://akpotechsolutions.com/assets/logo/logo.png","image":"https://akpotechsolutions.com/assets/images/hero/hero-accueil.jpg","description":"Maintenance et dépannage informatique à Cotonou, Calavi et environs.","telephone":"+2290190182549","email":"contact@akpotechsolutions.com","address":{"@type":"PostalAddress","streetAddress":"Calavi Zopah","addressLocality":"Calavi","addressCountry":"BJ"},"areaServed":["Cotonou","Calavi","Bénin"],"openingHours":"Mo-Sa 08:00-19:00","priceRange":"5000-50000 FCFA","sameAs":["https://www.facebook.com/akpotechsolutions"]}</script>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"ContactPage","name":"Contact et devis | AKPO TECH SOLUTIONS","url":"https://akpotechsolutions.com/pages/contact.html","description":"Demandez une intervention ou un devis informatique à Cotonou, Calavi et environs. Contactez AKPO TECH SOLUTIONS par téléphone, WhatsApp ou formulaire.","isPartOf":{"@type":"WebSite","name":"AKPO TECH SOLUTIONS","url":"https://akpotechsolutions.com/"}}</script>
+    <link rel="manifest" href="../site.webmanifest">
+</head>
+<body>
+
+    <div class="loader" id="loader"><div class="loader-spinner"></div></div>
+    <div class="progress-bar" id="progressBar" style="width:0%;"></div>
+
+    
+    <nav class="navbar navbar-expand-lg fixed-top">
+        <div class="container">
+            <a class="navbar-brand" href="../index.html">
+                <img src="../assets/logo/logo.png" alt="AKPO TECH SOLUTIONS" height="44">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-label="Menu principal">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto align-items-center gap-2">
+                    <li class="nav-item"><a class="nav-link" href="../index.html">Accueil</a></li>
+                    <li class="nav-item"><a class="nav-link" href="services.html">Services</a></li>
+                    <li class="nav-item"><a class="nav-link" href="projects.html">Projets</a></li>
+                    <li class="nav-item"><a class="nav-link" href="about.html">À Propos</a></li>
+                    <li class="nav-item"><a class="nav-link" href="faq.html">FAQ</a></li>
+                    <li class="nav-item"><a class="nav-link active" href="contact.html">Contact</a></li>
+                    <li class="nav-item"><a class="btn btn-primary btn-sm" href="contact.html"><i class="bi bi-chat-left-text"></i> Demander un devis</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    
+    <section style="padding-top:calc(var(--navbar-height) + 40px);padding-bottom:60px;background:var(--gradient-hero);">
+        <div class="container text-center">
+            <span class="section-tag">Contactez-nous</span>
+            <h1 class="section-title">Demandez une intervention</h1>
+            <p class="section-description">Remplissez le formulaire ou contactez-nous directement. Nous vous répondons sous 24h.</p>
+        </div>
+    </section>
+
+    
+    <section class="section bg-white" style="padding-top:0;">
+        <div class="container">
+            <div class="row g-4 mb-5">
+                <div class="col-md-3" data-animate="fade-up">
+                    <div class="contact-card">
+                        <div class="contact-icon"><i class="bi bi-whatsapp" style="color:#25D366;"></i></div>
+                        <h4>WhatsApp</h4>
+                        <p class="whatsapp"><a href="https://wa.me/2290190182549" target="_blank" rel="noopener noreferrer">01 90 18 25 49</a></p>
+                        <small class="text-muted">Réponse rapide</small>
+                    </div>
+                </div>
+                <div class="col-md-3" data-animate="fade-up">
+                    <div class="contact-card">
+                        <div class="contact-icon"><i class="bi bi-téléphone" style="color:#3B82F6;"></i></div>
+                        <h4>Téléphone</h4>
+                        <p class="phone"><a href="tel:+2290190182549">01 90 18 25 49</a></p>
+                        <p class="phone"><a href="tel:+2290144791362">01 44 79 13 62</a></p>
+                    </div>
+                </div>
+                <div class="col-md-3" data-animate="fade-up">
+                    <div class="contact-card">
+                        <div class="contact-icon"><i class="bi bi-envelope" style="color:#EF4444;"></i></div>
+                        <h4>Email</h4>
+                        <p class="email"><a href="mailto:contact@akpotechsolutions.com">contact@akpotechsolutions.com</a></p>
+                        <small class="text-muted">Réponse sous 24h</small>
+                    </div>
+                </div>
+                <div class="col-md-3" data-animate="fade-up">
+                    <div class="contact-card">
+                        <div class="contact-icon"><i class="bi bi-geo-alt" style="color:#8B5CF6;"></i></div>
+                        <h4>Adresse</h4>
+                        <p class="location"><a href="#" target="_blank" rel="noopener noreferrer">Calavi Zopah</a></p>
+                        <small class="text-muted">Cotonou, Bénin</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    <section class="section bg-section">
+        <div class="container">
+            <div class="row g-5">
+                
+                <div class="col-lg-7" data-animate="fade-left">
+                    <div class="form-card">
+                        <h3><i class="bi bi-chat-left-text text-primary"></i> Formulaire de contact</h3>
+                        <p class="text-muted" style="font-size:0.9rem;">Remplissez ce formulaire et nous vous contacterons rapidement.</p>
+                        <hr>
+                        
+                        <form id="contactForm" onsubmit="return submitContactForm(event)">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Nom complet <span class="required">*</span></label>
+                                        <input type="text" class="form-control" id="contactNom" placeholder="Ex: Jean Dupont" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Téléphone <span class="required">*</span></label>
+                                        <input type="tel" class="form-control" id="contactTéléphone" placeholder="Ex: 01 90 00 00 01" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Email</label>
+                                        <input type="email" class="form-control" id="contactEmail" placeholder="Ex: jean@email.com">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Service <span class="required">*</span></label>
+                                        <select class="form-control" id="contactService" required>
+                                            <option value="">Sélectionnez...</option>
+                                            <option value="Installation Windows">Installation Windows</option>
+                                            <option value="Dépannage informatique">Dépannage informatique</option>
+                                            <option value="Suppression virus">Suppression virus</option>
+                                            <option value="WiFi / Réseau">WiFi / Réseau</option>
+                                            <option value="Maintenance préventive">Maintenance préventive</option>
+                                            <option value="Récupération données">Récupération données</option>
+                                            <option value="Installation imprimante">Installation imprimante</option>
+                                            <option value="Autre">Autre</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label class="form-label">Adresse <span class="required">*</span></label>
+                                        <input type="text" class="form-control" id="contactAdresse" placeholder="Ex: Calavi Zopah, Cotonou" required>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label class="form-label">Description <span class="required">*</span></label>
+                                        <textarea class="form-control" id="contactDescription" rows="4" placeholder="Décrivez votre problème ou besoin..." required></textarea>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Urgence</label>
+                                        <select class="form-control" id="contactUrgence">
+                                            <option value="normal">Normal - 48h</option>
+                                            <option value="urgent">Urgent - 24h</option>
+                                            <option value="critique">Critique - Immédiat</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="form-group">
+                                        <label class="form-label">Source</label>
+                                        <select class="form-control" id="contactSource">
+                                            <option value="">Comment nous avez-vous connu ?</option>
+                                            <option value="internet">Internet / Google</option>
+                                            <option value="facebook">Facebook</option>
+                                            <option value="whatsapp">WhatsApp</option>
+                                            <option value="bouche-a-oreille">Bouche-à-oreille</option>
+                                            <option value="flyer">Flyer / Publicité</option>
+                                            <option value="autre">Autre</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-12">
+                                    <div class="form-group">
+                                        <label class="form-label">Vérification anti-spam <span class="required">*</span></label>
+                                        <div class="captcha-question">
+                                            <i class="bi bi-shield-check text-primary"></i> Combien font <strong id="captchaNum1">3</strong> + <strong id="captchaNum2">5</strong> ? 
+                                            <small>(Répondez par un chiffre)</small>
+                                        </div>
+                                        <input type="number" class="form-control mt-2" id="contactCaptcha" placeholder="Votre réponse..." required style="width:150px;">
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <button type="submit" class="btn btn-primary btn-lg w-100" id="submitBtn">
+                                        <i class="bi bi-send"></i> Envoyer ma demande
+                                    </button>
+                                </div>
+                            </div>
+                        </form>
+                        
+                        
+                        <div id="contactConfirmation" style="display:none;text-align:center;padding:30px;">
+                            <div class="confirmation-icon"><i class="bi bi-check-circle-fill"></i></div>
+                            <h3 style="color:#0F172A;">Demande envoyée avec succès !</h3>
+                            <p class="text-muted">Nous vous contacterons dans les plus brefs délais.</p>
+                            <button class="btn btn-outline-primary mt-2" onclick="resetForm()">
+                                <i class="bi bi-plus-circle"></i> Nouvelle demande
+                            </button>
+                        </div>
+                    </div>
+                </div>
+
+                
+                <div class="col-lg-5" data-animate="fade-right">
+                    <div class="form-card" style="height:100%;">
+                        <h4><i class="bi bi-geo-alt text-primary"></i> Nous trouver</h4>
+                        <p class="text-muted" style="font-size:0.9rem;">Calavi Zopah, Cotonou, Bénin</p>
+                        
+                        <div class="map-container">
+                            <div class="text-center">
+                                <i class="bi bi-geo-alt text-primary"></i>
+                                <p class="mt-2">Calavi Zopah, Cotonou</p>
+                                <small class="text-muted">Cliquez sur le lien ci-dessous pour ouvrir Google Maps</small>
+                            </div>
+                        </div>
+                        
+                        <div class="mt-3">
+                            <a href="https://www.google.com/maps?q=Calavi+Zopah+Cotonou+Benin" target="_blank" rel="noopener noreferrer" class="btn btn-outline-primary w-100">
+                                <i class="bi bi-map"></i> Ouvrir dans Google Maps
+                            </a>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h5><i class="bi bi-clock text-primary"></i> Horaires</h5>
+                        <div class="d-flex justify-content-between">
+                            <span>Lundi - Samedi</span>
+                            <span class="fw-bold">8h - 19h</span>
+                        </div>
+                        <div class="d-flex justify-content-between">
+                            <span>Dimanche & jours fériés</span>
+                            <span class="fw-bold text-primary">Urgences 7j/7</span>
+                        </div>
+                        
+                        <hr>
+                        
+                        <h5><i class="bi bi-share text-primary"></i> Suivez-nous</h5>
+                        <div class="d-flex gap-3">
+                            <a href="https://wa.me/2290190182549" class="btn btn-success btn-sm" target="_blank" rel="noopener noreferrer">
+                                <i class="bi bi-whatsapp"></i> WhatsApp
+                            </a>
+                            <a href="https://www.facebook.com/akpotechsolutions" class="btn btn-primary btn-sm" target="_blank" rel="noopener noreferrer">
+                                <i class="bi bi-facebook"></i> Facebook
+                            </a>
+                            <a href="mailto:contact@akpotechsolutions.com" class="btn btn-danger btn-sm">
+                                <i class="bi bi-envelope"></i> Email
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    
+    <section class="section bg-white text-center">
+        <div class="container">
+            <div class="p-5 rounded-4" style="background:var(--gradient-primary);" data-animate="scale">
+                <h2 class="text-white mb-3">Besoin d'une intervention urgente ?</h2>
+                <p class="text-white mb-4 opacity-75">Appelez-nous directement pour une prise en charge immédiate.</p>
+                <a href="tel:+2290190182549" class="btn btn-white btn-lg">
+                    <i class="bi bi-téléphone"></i> 01 90 18 25 49
+                </a>
+            </div>
+        </div>
+    </section>
+
+    
+    <footer class="footer">
+        <div class="container">
+            <div class="row g-4">
+                <div class="col-lg-4">
+                    <img src="../assets/logo/logo.png" alt="AKPO TECH" style="height:40px;margin-bottom:12px;">
+                    <p>Maintenance et dépannage informatique. Intervention à Cotonou, Calavi et environs.</p>
+                    <div class="d-flex gap-3 mt-3">
+                        <a href="https://wa.me/2290190182549" class="text-white" target="_blank" rel="noopener noreferrer"><i class="bi bi-whatsapp fs-4"></i></a>
+                        <a href="https://www.facebook.com/akpotechsolutions" class="text-white" target="_blank" rel="noopener noreferrer"><i class="bi bi-facebook fs-4"></i></a>
+                        <a href="mailto:contact@akpotechsolutions.com" class="text-white"><i class="bi bi-envelope fs-4"></i></a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <div class="footer-title">Navigation</div>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="../index.html">Accueil</a>
+                        <a href="services.html">Services</a>
+                        <a href="projects.html">Projets</a>
+                        <a href="contact.html">Contact</a>
+                    </div>
+                </div>
+                <div class="col-lg-2 col-md-4">
+                    <div class="footer-title">Liens</div>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="faq.html">FAQ</a>
+                        <a href="privacy-policy.html">Confidentialité</a>
+                        <a href="contact.html">Demander un devis</a>
+                    </div>
+                </div>
+                <div class="col-lg-4 col-md-4">
+                    <div class="footer-title">Contact</div>
+                    <div class="d-flex flex-column gap-2">
+                        <a href="tel:+2290190182549"><i class="bi bi-téléphone"></i> 01 90 18 25 49</a>
+                        <a href="tel:+2290144791362"><i class="bi bi-téléphone"></i> 01 44 79 13 62</a>
+                        <a href="mailto:contact@akpotechsolutions.com"><i class="bi bi-envelope"></i> contact@akpotechsolutions.com</a>
+                        <a href="#" target="_blank" rel="noopener noreferrer"><i class="bi bi-geo-alt"></i> Calavi Zopah, Cotonou</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 AKPO TECH SOLUTIONS. Tous droits réservés. 
+                    
+                </p>
+            </div>
+        </div>
+    </footer>
+
+    
+    <button class="back-to-top" id="backToTop"><i class="bi bi-chevron-up"></i></button>
+
+    
+    <div id="chatbotContainer"></div>
+
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="../assets/js/main.js"></script>
+    <script src="../assets/js/navbar.js"></script>
+    <script src="../assets/js/scroll.js"></script>
+    <script src="../assets/js/chatbot.js"></script>
+
+    <script>
+
+        let captchaResult = 0;
+
+        function generateCaptcha() {
+            const num1 = Math.floor(Math.random() * 9) + 1;
+            const num2 = Math.floor(Math.random() * 9) + 1;
+            document.getElementById('captchaNum1').textContent = num1;
+            document.getElementById('captchaNum2').textContent = num2;
+            captchaResult = num1 + num2;
+        }
+
+        async function submitContactForm(event) {
+            event.preventDefault();
+            const form = document.getElementById('contactForm');
+            const btn = document.getElementById('submitBtn');
+            const captchaAnswer = parseInt(document.getElementById('contactCaptcha').value, 10);
+            if (Number.isNaN(captchaAnswer) || captchaAnswer !== captchaResult) {
+                alert('Réponse anti-spam incorrecte. Veuillez recommencer.');
+                generateCaptcha();
+                document.getElementById('contactCaptcha').value = '';
+                return false;
+            }
+            if (!form.checkValidity()) {
+                form.reportValidity();
+                return false;
+            }
+            const value = (id) => document.getElementById(id).value.trim();
+            const service = document.getElementById('contactService').value;
+            const urgence = document.getElementById('contactUrgence').value;
+            const source = document.getElementById('contactSource').value;
+            const subject = `Demande d’intervention — ${service || 'Service informatique'}`;
+            const body = [
+                `Nom : ${value('contactNom')}`,
+                `Téléphone : ${value('contactTéléphone')}`,
+                `E-mail : ${value('contactEmail')}`,
+                `Service : ${service}`,
+                `Urgence : ${urgence}`,
+                `Adresse : ${value('contactAdresse')}`,
+                '',
+                `Description : ${value('contactDescription')}`
+            ].join('\\n');
+            const payload = {
+                nom: value('contactNom'),
+                téléphone: value('contactTéléphone'),
+                email: value('contactEmail'),
+                service,
+                urgence,
+                source,
+                adresse: value('contactAdresse'),
+                description: value('contactDescription'),
+                statut: 'nouvelle',
+                lu: false,
+                date: firebase.firestore.FieldValue.serverTimestamp(),
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            };
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Enregistrement...';
+            try {
+                await window.AkpoGuard.ready;
+                await db.collection('contacts').add(payload);
+                form.style.display = 'none';
+                document.getElementById('contactConfirmation').style.display = 'block';
+            } catch (error) {
+                console.error('[AKPO] Enregistrement Contact impossible :', error);
+                btn.disabled = false;
+                btn.innerHTML = '<i class="bi bi-send"></i> Envoyer ma demande';
+                if (confirm('Le service en ligne est momentanément indisponible. Ouvrir votre messagerie ?')) {
+                    window.location.href = `mailto:contact@akpotechsolutions.com?subject=${encodeURIComponent(subject)}&body=${encodeURIComponent(body)}`;
+                }
+            }
+            return false;
+        }
+
+        function resetForm() {
+            document.getElementById('contactForm').reset();
+            document.getElementById('contactForm').style.display = 'block';
+            document.getElementById('contactConfirmation').style.display = 'none';
+            document.getElementById('submitBtn').disabled = false;
+            document.getElementById('submitBtn').innerHTML = '<i class="bi bi-send"></i> Envoyer ma demande';
+            generateCaptcha();
+        }
+
+        document.addEventListener('DOMContentLoaded', generateCaptcha);
+    </script>
+</body>
+</html>

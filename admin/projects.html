@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Projets | Administration AKPO TECH</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="../assets/logo/logo.png">
+    <meta name="theme-color" content="#3B82F6">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/reset.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="../assets/js/session-guard.js"></script>
+</head>
+<body>
+
+<div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-brand"><img src="../assets/logo/logo.png" alt="AKPO TECH"></div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="sidebar-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="clients.html" class="sidebar-link"><i class="bi bi-people"></i> Clients</a>
+            <a href="services.html" class="sidebar-link"><i class="bi bi-tools"></i> Services</a>
+            <a href="projects.html" class="sidebar-link active"><i class="bi bi-folder"></i> Projets</a>
+            <a href="invoices.html" class="sidebar-link"><i class="bi bi-receipt"></i> Factures</a>
+            <a href="payments.html" class="sidebar-link"><i class="bi bi-credit-card"></i> Paiements</a>
+            <a href="messages.html" class="sidebar-link"><i class="bi bi-envelope"></i> Messages</a>
+            <a href="statistiques.html" class="sidebar-link"><i class="bi bi-bar-chart"></i> Statistiques</a>
+            <a href="settings.html" class="sidebar-link"><i class="bi bi-gear"></i> Paramètres</a>
+        </nav>
+        <button class="sidebar-logout" onclick="AkpoGuard.logout('../auth/admin-login.html')"><i class="bi bi-box-arrow-right"></i> Déconnexion</button>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dashboard-header"><h1>Gestion des projets</h1><button class="btn btn-primary btn-sm" onclick="showAddProject()"><i class="bi bi-plus-circle"></i> Nouveau projet</button></div>
+        <div class="row g-4" id="projectsList"></div>
+    </main>
+</div>
+
+<div id="projectModal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,0.5);z-index:999;align-items:center;justify-content:center;">
+    <div style="background:white;border-radius:16px;padding:24px;width:90%;max-width:500px;">
+        <h4 class="mb-3">Ajouter un projet</h4>
+        <form id="projectForm">
+            <div class="mb-3"><label class="form-label">Titre</label><input type="text" id="projectTitre" class="form-control" required></div>
+            <div class="mb-3"><label class="form-label">Description</label><textarea id="projectDesc" class="form-control" rows="3" required></textarea></div>
+            <div class="mb-3"><label class="form-label">Tags (séparés par des virgules)</label><input type="text" id="projectTags" class="form-control" placeholder="Windows, PME, Calavi"></div>
+            <div class="mb-3"><label class="form-label">Image (nom du fichier)</label><input type="text" id="projectImage" class="form-control" placeholder="mon-image.jpg"></div>
+            <button type="submit" class="btn btn-primary">Ajouter</button>
+            <button type="button" class="btn btn-secondary ms-2" onclick="document.getElementById('projectModal').style.display='none'">Annuler</button>
+        </form>
+    </div>
+</div>
+
+<script>
+
+    
+    
+    
+    let allProjects = [];
+
+    AkpoGuard.requireAdmin(function(user, profile) {
+        loadProjects();
+    });
+
+    async function loadProjects() {
+        const snapshot = await db.collection('projects').orderBy('date','desc').get();
+        allProjects = []; snapshot.forEach(doc => allProjects.push({ id: doc.id, ...doc.data() }));
+        document.getElementById('projectsList').innerHTML = allProjects.length === 0 ? '<div class="col-12 text-center py-5"><i class="bi bi-folder fs-1 text-muted"></i><p>Aucun projet</p></div>' :
+            allProjects.map(p => `<div class="col-md-4"><div class="card"><h5>${p.titre}</h5><p class="text-muted small">${p.description}</p><div class="d-flex flex-wrap gap-1 mb-2">${(p.tags||'').split(',').map(t => `<span class="badge bg-primary">${t.trim()}</span>`).join('')}</div><button class="btn btn-sm btn-outline-danger" onclick="deleteProject('${p.id}')"><i class="bi bi-trash"></i></button></div></div>`).join('');
+    }
+
+    function showAddProject() { document.getElementById('projectModal').style.display = 'flex'; }
+
+    document.getElementById('projectForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        db.collection('projects').add({
+            titre: document.getElementById('projectTitre').value,
+            description: document.getElementById('projectDesc').value,
+            tags: document.getElementById('projectTags').value,
+            image: document.getElementById('projectImage').value,
+            date: firebase.firestore.FieldValue.serverTimestamp()
+        }).then(() => { this.reset(); document.getElementById('projectModal').style.display = 'none'; loadProjects(); })
+        .catch(err => alert('Erreur : ' + err.message));
+    });
+
+    async function deleteProject(id) {
+        if (!confirm('Supprimer ce projet ?')) return;
+        await db.collection('projects').doc(id).delete();
+        allProjects = allProjects.filter(p => p.id !== id);
+        loadProjects();
+    }
+</script>
+</body>
+</html>

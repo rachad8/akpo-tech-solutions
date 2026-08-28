@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Support | AKPO TECH SOLUTIONS</title>
+    <meta name="robots" content="noindex, nofollow">
+    
+    <link rel="icon" type="image/png" href="../assets/logo/logo.png">
+    <meta name="theme-color" content="#3B82F6">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/reset.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    
+    <style>
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .toast-success { background: #10B981; }
+        .toast-error { background: #EF4444; }
+        .toast-info { background: #3B82F6; }
+        
+        .support-card {
+            background: white;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 24px;
+            text-align: center;
+            height: 100%;
+            transition: all 0.2s;
+        }
+        .support-card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 4px 20px rgba(0,0,0,0.08);
+        }
+        .support-card .icon {
+            font-size: 2.5rem;
+            color: #3B82F6;
+            margin-bottom: 12px;
+        }
+        .support-card .title {
+            font-weight: 600;
+            color: #0F172A;
+        }
+        .support-card .desc {
+            font-size: 0.9rem;
+            color: #94A3B8;
+        }
+        .faq-item {
+            border-bottom: 1px solid #E2E8F0;
+            padding: 12px 0;
+            cursor: pointer;
+        }
+        .faq-item:last-child { border-bottom: none; }
+        .faq-item .faq-q {
+            font-weight: 600;
+            color: #0F172A;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        .faq-item .faq-a {
+            display: none;
+            padding-top: 8px;
+            color: #475569;
+            font-size: 0.9rem;
+        }
+        .faq-item.active .faq-a { display: block; }
+        .faq-item .faq-q i { transition: transform 0.3s; }
+        .faq-item.active .faq-q i { transform: rotate(180deg); }
+    </style>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="../assets/js/session-guard.js"></script>
+</head>
+<body>
+
+    <div class="dashboard-layout">
+        
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-brand">
+                <a href="../index.html"><img src="../assets/logo/logo.png" alt="AKPO TECH" style="height:36px;"></a>
+                <small style="color:#94A3B8;display:block;font-size:0.7rem;">Espace Client</small>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="sidebar-link"><i class="bi bi-speedometer2"></i> Tableau de bord</a>
+                <a href="profile.html" class="sidebar-link"><i class="bi bi-person"></i> Mon profil</a>
+                <a href="invoices.html" class="sidebar-link"><i class="bi bi-receipt"></i> Factures</a>
+                <a href="payments.html" class="sidebar-link"><i class="bi bi-credit-card"></i> Paiements</a>
+                <a href="history.html" class="sidebar-link"><i class="bi bi-clock-history"></i> Historique</a>
+                <a href="support.html" class="sidebar-link active"><i class="bi bi-headset"></i> Support</a>
+                <a href="settings.html" class="sidebar-link"><i class="bi bi-gear"></i> Paramètres</a>
+            </nav>
+            <div style="margin-top:auto;">
+                <a href="../index.html" class="sidebar-link" style="color:#94A3B8;"><i class="bi bi-arrow-left"></i> Retour au site</a>
+                <button class="sidebar-logout" onclick="handleLogout()"><i class="bi bi-box-arrow-right"></i> Déconnexion</button>
+            </div>
+        </aside>
+
+        
+        <main class="dashboard-main">
+            
+            <div class="dashboard-header">
+                <h1><i class="bi bi-headset"></i> Support</h1>
+                <span class="text-muted">Nous sommes la pour vous aider</span>
+            </div>
+
+            
+            <div class="row g-4 mb-4">
+                <div class="col-md-4">
+                    <div class="support-card">
+                        <div class="icon"><i class="bi bi-whatsapp" style="color:#25D366;"></i></div>
+                        <div class="title">WhatsApp</div>
+                        <div class="desc">Réponse rapide</div>
+                        <a href="https://wa.me/2290190182549" class="btn btn-sm btn-success mt-2" target="_blank" rel="noopener noreferrer">
+                            <i class="bi bi-whatsapp"></i> 01 90 18 25 49
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="support-card">
+                        <div class="icon"><i class="bi bi-téléphone" style="color:#3B82F6;"></i></div>
+                        <div class="title">Appel</div>
+                        <div class="desc">Urgence 7j/7</div>
+                        <a href="tel:+2290190182549" class="btn btn-sm btn-primary mt-2">
+                            <i class="bi bi-téléphone"></i> 01 90 18 25 49
+                        </a>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="support-card">
+                        <div class="icon"><i class="bi bi-envelope" style="color:#EF4444;"></i></div>
+                        <div class="title">Email</div>
+                        <div class="desc">Réponse sous 24h</div>
+                        <a href="mailto:contact@akpotechsolutions.com" class="btn btn-sm btn-danger mt-2">
+                            <i class="bi bi-envelope"></i> Nous ecrire
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="dashboard-table-card">
+                <div class="dashboard-table-header">
+                    <h3><i class="bi bi-question-circle"></i> Foire aux questions</h3>
+                </div>
+                <div class="p-3">
+                    <div class="faq-item" onclick="toggleFaq(this)">
+                        <div class="faq-q">
+                            <span>Quels sont vos délais d'intervention ?</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="faq-a">Nous intervenons generalement sous 24h a Cotonou, Calavi et environs. Pour les urgences, nous pouvons intervenir le jour meme.</div>
+                    </div>
+                    <div class="faq-item" onclick="toggleFaq(this)">
+                        <div class="faq-q">
+                            <span>Comment se passe le paiement ?</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="faq-a">Nous acceptons le paiement en espèces, par Mobile Money (MTN, Moov) et par virement bancaire. Le paiement s'effectue apres l'intervention.</div>
+                    </div>
+                    <div class="faq-item" onclick="toggleFaq(this)">
+                        <div class="faq-q">
+                            <span>Proposez-vous des contrats de maintenance ?</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="faq-a">Oui, nous proposons des contrats de maintenance preventive pour les entreprises avec des visites regulieres et un support prioritaire.</div>
+                    </div>
+                    <div class="faq-item" onclick="toggleFaq(this)">
+                        <div class="faq-q">
+                            <span>Pouvez-vous recuperer mes données perdues ?</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="faq-a">Oui, nous proposons un service de recuperation de données sur disques durs endommages ou fichiers supprimes accidentellement.</div>
+                    </div>
+                    <div class="faq-item" onclick="toggleFaq(this)">
+                        <div class="faq-q">
+                            <span>Quelles zones couvrez-vous ?</span>
+                            <i class="bi bi-chevron-down"></i>
+                        </div>
+                        <div class="faq-a">Nous intervenons principalement a Cotonou, Calavi Zopah et environs. Pour les zones plus eloignees, contactez-nous pour verifier la disponibilite.</div>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    
+    <div id="toast" class="toast-notification"></div>
+
+    <script>
+
+        AkpoGuard.requireAuth();
+
+        function toggleFaq(element) {
+            element.classList.toggle('active');
+        }
+
+        async function handleLogout() {
+            await AkpoGuard.logout('../auth/login.html');
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast-notification toast-' + type + ' show';
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

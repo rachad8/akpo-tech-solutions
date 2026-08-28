@@ -1,0 +1,49 @@
+
+
+:focus-visible {
+    outline: 3px solid var(--color-primary);
+    outline-offset: 2px;
+    border-radius: 4px;
+}
+
+.skip-link:focus {
+    top: 0 !important;
+    left: 0 !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+@media (prefers-contrast: high) {
+    :root {
+        --text-primary: #000000;
+        --text-secondary: #1a1a1a;
+        --color-primary: #0000FF;
+        --border-color: #000000;
+    }
+    
+    body {
+        background: white;
+        color: black;
+    }
+    
+    a, .btn {
+        text-decoration: underline;
+    }
+}
+
+@media (prefers-color-scheme: dark) {
+    
+}
+
+@media screen and (max-width: 320px) {
+    body {
+        font-size: 14px;
+    }
+}

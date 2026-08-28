@@ -1,0 +1,74 @@
+
+
+@media print {
+    * {
+        background: white !important;
+        color: black !important;
+        text-shadow: none !important;
+        box-shadow: none !important;
+    }
+
+    .navbar, .navbar-toggler, .navbar-collapse,
+    .chatbot-toggle, .chatbot-window,
+    .back-to-top, .progress-bar,
+    .loader, .mobile-menu-btn,
+    .dashboard-sidebar, .sidebar-overlay,
+    footer, .footer,
+    .btn, button[type="submit"],
+    video, audio, iframe {
+        display: none !important;
+    }
+
+    body {
+        font-size: 12pt;
+        line-height: 1.5;
+        margin: 0;
+        padding: 0;
+    }
+
+    h1 { font-size: 24pt; }
+    h2 { font-size: 18pt; }
+    h3 { font-size: 14pt; }
+
+    a {
+        text-decoration: underline;
+        color: black !important;
+    }
+
+    a[href]:after {
+        content: " (" attr(href) ")";
+        font-size: 0.8em;
+        color: #666;
+    }
+
+    a[href^="#"]:after,
+    a[href^="javascript"]:after {
+        content: "";
+    }
+
+    img {
+        max-width: 100% !important;
+        page-break-inside: avoid;
+    }
+
+    table {
+        border-collapse: collapse;
+        width: 100%;
+    }
+
+    th, td {
+        border: 1px solid #ccc;
+        padding: 8px;
+        text-align: left;
+    }
+
+    .section {
+        padding: 20px 0;
+        page-break-inside: avoid;
+    }
+
+    .dashboard-main {
+        margin-left: 0 !important;
+        padding: 0 !important;
+    }
+}

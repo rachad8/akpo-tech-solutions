@@ -1,0 +1,19 @@
+# ============================================
+# AUTH - Fichier .htaccess
+# Protection du dossier d'authentification
+# ============================================
+
+# Empêcher le listing des fichiers
+Options -Indexes
+
+# Bloquer l'accès aux fichiers sensibles
+<FilesMatch "^(\.env|\.htaccess|\.htpasswd|config\.php|config\.js|settings\.php|settings\.js|database\.php|database\.js|firebase-config\.js)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Rediriger les tentatives d'accès direct aux fichiers
+<Files ~ "\.(php|ini|log|sql|db|sh|pl|py)$">
+    Order Allow,Deny
+    Deny from all
+</Files>

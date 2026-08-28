@@ -1,0 +1,512 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paramètres | Administration AKPO TECH</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="../assets/logo/logo.png">
+    <meta name="theme-color" content="#3B82F6">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/reset.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    
+    <style>
+        .badge-notif {
+            font-size: 0.65rem !important;
+            padding: 3px 8px;
+            border-radius: 20px;
+            margin-left: auto;
+        }
+        .badge-notif.bg-danger { background: #EF4444 !important; }
+        .btn-action { padding: 4px 8px; font-size: 0.8rem; }
+        
+        .settings-card {
+            background: white;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .settings-card .settings-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #0F172A;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .settings-card .settings-title i {
+            color: #3B82F6;
+            font-size: 1.2rem;
+        }
+        .settings-card .form-label {
+            font-weight: 500;
+            font-size: 0.85rem;
+            color: #475569;
+        }
+        .settings-card .form-control, .settings-card .form-select {
+            border-radius: 8px;
+            border: 1px solid #E2E8F0;
+            padding: 10px 14px;
+            font-size: 0.9rem;
+        }
+        .settings-card .form-control:focus, .settings-card .form-select:focus {
+            border-color: #3B82F6;
+            box-shadow: 0 0 0 3px rgba(59,130,246,0.1);
+        }
+        
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .toast-success { background: #10B981; }
+        .toast-error { background: #EF4444; }
+        .toast-info { background: #3B82F6; }
+        
+        .service-tag {
+            display: inline-block;
+            background: #EFF6FF;
+            color: #3B82F6;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 0.8rem;
+            margin: 3px;
+        }
+        .service-tag .remove-service {
+            cursor: pointer;
+            margin-left: 6px;
+            color: #EF4444;
+        }
+        .service-tag .remove-service:hover { opacity: 0.7; }
+    </style>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="../assets/js/session-guard.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
+    <script src="../assets/js/payment.js"></script>
+</head>
+<body>
+
+<div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-brand">
+            <a href="../index.html"><img src="../assets/logo/logo.png" alt="AKPO TECH" style="height:36px;"></a>
+            <small style="color:#94A3B8;display:block;font-size:0.7rem;">Administration</small>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="sidebar-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="demandes.html" class="sidebar-link"><i class="bi bi-list-check"></i> Demandes</a>
+            <a href="messages.html" class="sidebar-link"><i class="bi bi-envelope"></i> Messages</a>
+            <a href="clients.html" class="sidebar-link"><i class="bi bi-people"></i> Clients</a>
+            <a href="invoices.html" class="sidebar-link"><i class="bi bi-receipt"></i> Factures</a>
+            <a href="commentaires.html" class="sidebar-link"><i class="bi bi-chat-square-text"></i> Commentaires</a>
+            <a href="statistiques.html" class="sidebar-link"><i class="bi bi-bar-chart"></i> Statistiques</a>
+            <a href="settings.html" class="sidebar-link active"><i class="bi bi-gear"></i> Paramètres</a>
+        </nav>
+        <div style="margin-top:auto;">
+            <a href="../index.html" class="sidebar-link" style="color:#94A3B8;"><i class="bi bi-arrow-left"></i> Retour au site</a>
+            <button class="sidebar-logout" onclick="AkpoGuard.logout('../auth/admin-login.html')"><i class="bi bi-box-arrow-right"></i> Déconnexion</button>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        
+        
+        <div class="dashboard-header">
+            <h1><i class="bi bi-gear"></i> Paramètres</h1>
+            <span class="text-muted">Configuration du site et du compte administrateur</span>
+        </div>
+
+        
+        <div class="settings-card">
+            <div class="settings-title"><i class="bi bi-person-circle"></i> Mon compte administrateur</div>
+            <form id="adminProfileForm">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-envelope"></i> Email</label>
+                            <input type="email" id="adminEmail" class="form-control" disabled>
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-person"></i> Nom d'affichage</label>
+                            <input type="text" id="adminDisplayName" class="form-control" placeholder="AKPO TECH SOLUTIONS">
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Mettre à jour</button>
+            </form>
+        </div>
+
+        
+        <div class="settings-card">
+            <div class="settings-title"><i class="bi bi-lock"></i> Changer le mot de passe</div>
+            <form id="passwordForm">
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Mot de passe actuel</label>
+                            <input type="password" id="currentPassword" class="form-control" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Nouveau mot de passe</label>
+                            <input type="password" id="newPassword" class="form-control" placeholder="•••••••• (min 6 caractères)" required>
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label">Confirmer</label>
+                            <input type="password" id="confirmPassword" class="form-control" placeholder="••••••••" required>
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-warning"><i class="bi bi-key"></i> Changer le mot de passe</button>
+            </form>
+        </div>
+
+        
+        <div class="settings-card">
+            <div class="settings-title"><i class="bi bi-tools"></i> Services proposés</div>
+            <p class="text-muted small">Ces services apparaîtront dans le formulaire de demande des clients.</p>
+            
+            <div id="servicesList" class="mb-3">
+                <div class="text-muted">Chargement des services...</div>
+            </div>
+            
+            <div class="row">
+                <div class="col-md-8">
+                    <div class="input-group">
+                        <input type="text" id="newServiceInput" class="form-control" placeholder="Ex: Installation de serveur">
+                        <button class="btn btn-primary" onclick="addService()"><i class="bi bi-plus-circle"></i> Ajouter</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        
+        <div class="settings-card">
+            <div class="settings-title"><i class="bi bi-info-circle"></i> Informations du site</div>
+            <form id="siteInfoForm">
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-building"></i> Nom du site</label>
+                            <input type="text" id="siteName" class="form-control" value="AKPO TECH SOLUTIONS">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-tag"></i> Slogan</label>
+                            <input type="text" id="siteSlogan" class="form-control" value="Votre informatique, notre priorité">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-téléphone"></i> Téléphone 1</label>
+                            <input type="text" id="sitePhone1" class="form-control" value="01 90 18 25 49">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-téléphone"></i> Téléphone 2</label>
+                            <input type="text" id="sitePhone2" class="form-control" value="01 44 79 13 62">
+                        </div>
+                    </div>
+                    <div class="col-md-4">
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-envelope"></i> Email contact</label>
+                            <input type="email" id="siteEmail" class="form-control" value="contact@akpotechsolutions.com">
+                        </div>
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-geo-alt"></i> Adresse</label>
+                            <input type="text" id="siteAddress" class="form-control" value="Calavi Zopah, Cotonou, Bénin">
+                        </div>
+                    </div>
+                    <div class="col-md-6">
+                        <div class="mb-3">
+                            <label class="form-label"><i class="bi bi-clock"></i> Horaires</label>
+                            <input type="text" id="siteHours" class="form-control" value="Lun-Sam : 8h-19h | Urgences : 7j/7">
+                        </div>
+                    </div>
+                </div>
+                <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Sauvegarder</button>
+            </form>
+        </div>
+
+        
+        <div class="settings-card" style="border-color:#FECACA;background:#FEF2F2;">
+            <div class="settings-title" style="color:#DC2626;"><i class="bi bi-exclamation-triangle"></i> Zone de danger</div>
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-database"></i> Réinitialiser les données de test</label>
+                        <button class="btn btn-outline-warning btn-sm" onclick="resetTestData()"><i class="bi bi-arrow-counterclockwise"></i> Réinitialiser</button>
+                    </div>
+                </div>
+                <div class="col-md-6">
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-trash"></i> Supprimer toutes les données</label>
+                        <button class="btn btn-outline-danger btn-sm" onclick="deleteAllData()"><i class="bi bi-trash"></i> Supprimer tout</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<div id="toast" class="toast-notification"></div>
+
+<script>
+
+    
+    
+    
+
+    let allServices = [];
+
+    AkpoGuard.requireAdmin(async function(user, profile) {
+        document.getElementById('adminEmail').value = user.email;
+        document.getElementById('adminDisplayName').value = user.displayName || '';
+        await loadServices();
+        listenRealtime();
+    });
+
+    async function loadServices() {
+        const doc = await db.collection('settings').doc('services').get();
+        if (doc.exists) {
+            allServices = doc.data().list || [];
+        } else {
+            allServices = [
+                'Installation Windows 11',
+                'Installation Windows 10',
+                'Dépannage informatique',
+                'Suppression virus',
+                'Installation WiFi / Réseau',
+                'Maintenance préventive',
+                'Récupération données',
+                'Installation imprimante'
+            ];
+            await db.collection('settings').doc('services').set({ list: allServices });
+        }
+        renderServices();
+    }
+
+    function renderServices() {
+        const container = document.getElementById('servicesList');
+        if (allServices.length === 0) {
+            container.innerHTML = '<p class="text-muted">Aucun service configuré.</p>';
+            return;
+        }
+        container.innerHTML = allServices.map(s => `
+            <span class="service-tag">
+                <i class="bi bi-tools"></i> ${s}
+                <span class="remove-service" onclick="removeService('${s}')" title="Supprimer"><i class="bi bi-x-circle"></i></span>
+            </span>
+        `).join(' ');
+    }
+
+    async function addService() {
+        const input = document.getElementById('newServiceInput');
+        const service = input.value.trim();
+        if (!service) {
+            showToast('Veuillez saisir un nom de service', 'error');
+            return;
+        }
+        if (allServices.includes(service)) {
+            showToast('Ce service existe déjà', 'error');
+            return;
+        }
+        allServices.push(service);
+        await db.collection('settings').doc('services').set({ list: allServices });
+        renderServices();
+        input.value = '';
+        showToast('Service ajouté avec succès', 'success');
+    }
+
+    async function removeService(service) {
+        if (!confirm(`Supprimer le service "${service}" ?`)) return;
+        allServices = allServices.filter(s => s !== service);
+        await db.collection('settings').doc('services').set({ list: allServices });
+        renderServices();
+        showToast('Service supprimé', 'info');
+    }
+
+    document.getElementById('adminProfileForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const displayName = document.getElementById('adminDisplayName').value.trim();
+        try {
+            await auth.currentUser.updateProfile({ displayName: displayName });
+            showToast('Profil mis à jour avec succès', 'success');
+        } catch(error) {
+            showToast('Erreur : ' + error.message, 'error');
+        }
+    });
+
+    document.getElementById('passwordForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const current = document.getElementById('currentPassword').value;
+        const newPass = document.getElementById('newPassword').value;
+        const confirm = document.getElementById('confirmPassword').value;
+
+        if (newPass.length < 6) {
+            showToast('Le nouveau mot de passe doit contenir au moins 6 caractères', 'error');
+            return;
+        }
+        if (newPass !== confirm) {
+            showToast('Les mots de passe ne correspondent pas', 'error');
+            return;
+        }
+
+        try {
+            const credential = firebase.auth.EmailAuthProvider.credential(
+                auth.currentUser.email,
+                current
+            );
+            await auth.currentUser.reauthenticateWithCredential(credential);
+            await auth.currentUser.updatePassword(newPass);
+            this.reset();
+            showToast('Mot de passe changé avec succès', 'success');
+        } catch(error) {
+            if (error.code === 'auth/wrong-password') {
+                showToast('Mot de passe actuel incorrect', 'error');
+            } else {
+                showToast('Erreur : ' + error.message, 'error');
+            }
+        }
+    });
+
+    document.getElementById('siteInfoForm').addEventListener('submit', async function(e) {
+        e.preventDefault();
+        const data = {
+            siteName: document.getElementById('siteName').value,
+            slogan: document.getElementById('siteSlogan').value,
+            phone1: document.getElementById('sitePhone1').value,
+            phone2: document.getElementById('sitePhone2').value,
+            email: document.getElementById('siteEmail').value,
+            address: document.getElementById('siteAddress').value,
+            hours: document.getElementById('siteHours').value,
+            updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+        };
+
+        try {
+            await db.collection('settings').doc('site').set(data);
+            showToast('Informations du site sauvegardées', 'success');
+        } catch(error) {
+            showToast('Erreur : ' + error.message, 'error');
+        }
+    });
+
+    async function resetTestData() {
+        if (!confirm('Réinitialiser les données de test ?\n\nCela supprimera toutes les données de test créées.')) return;
+
+        try {
+            const clients = await db.collection('clients').where('nom', '==', 'Jean Dupont').get();
+            for (const cd of clients.docs) {
+                const demandes = await db.collection('clients').doc(cd.id).collection('demandes').get();
+                for (const d of demandes.docs) {
+                    await db.collection('clients').doc(cd.id).collection('demandes').doc(d.id).delete();
+                }
+                await db.collection('clients').doc(cd.id).delete();
+            }
+
+            const msgs = await db.collection('contacts').where('nom', '==', 'Marie Kouassi').get();
+            msgs.forEach(d => db.collection('contacts').doc(d.id).delete());
+
+            const factures = await db.collection('factures').where('id', '==', 'FAC-2024-0001').get();
+            factures.forEach(d => db.collection('factures').doc(d.id).delete());
+
+            const coms = await db.collection('commentaires').where('nom', '==', 'Pierre Ahouansou').get();
+            coms.forEach(d => db.collection('commentaires').doc(d.id).delete());
+
+            showToast('Données de test réinitialisées', 'success');
+        } catch(error) {
+            showToast('Erreur : ' + error.message, 'error');
+        }
+    }
+
+    async function deleteAllData() {
+        if (!confirm('⚠️ SUPPRIMER TOUTES LES DONNÉES ?\n\nCette action est irréversible !')) return;
+        if (!confirm('Confirmation finale : tout supprimer ?')) return;
+
+        try {
+
+            const clients = await db.collection('clients').get();
+            for (const cd of clients.docs) {
+                const demandes = await db.collection('clients').doc(cd.id).collection('demandes').get();
+                for (const d of demandes.docs) {
+                    await db.collection('clients').doc(cd.id).collection('demandes').doc(d.id).delete();
+                }
+                await db.collection('clients').doc(cd.id).delete();
+            }
+
+            const msgs = await db.collection('contacts').get();
+            msgs.forEach(d => db.collection('contacts').doc(d.id).delete());
+
+            const factures = await db.collection('factures').get();
+            factures.forEach(d => db.collection('factures').doc(d.id).delete());
+
+            const coms = await db.collection('commentaires').get();
+            coms.forEach(d => db.collection('commentaires').doc(d.id).delete());
+
+            showToast('Toutes les données ont été supprimées', 'info');
+        } catch(error) {
+            showToast('Erreur : ' + error.message, 'error');
+        }
+    }
+
+    function listenRealtime() {
+        db.collection('settings').doc('services')
+            .onSnapshot(async (doc) => {
+                if (doc.exists) {
+                    allServices = doc.data().list || [];
+                    renderServices();
+                }
+            });
+    }
+
+    function showToast(message, type = 'info') {
+        const toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = 'toast-notification toast-' + type + ' show';
+        clearTimeout(toast._timeout);
+        toast._timeout = setTimeout(() => {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+</script>
+
+</body>
+</html>

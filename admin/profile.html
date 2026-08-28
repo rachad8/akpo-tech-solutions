@@ -1,0 +1,63 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Profil | Administration AKPO TECH</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="../assets/logo/logo.png">
+    <meta name="theme-color" content="#3B82F6">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/reset.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="../assets/js/session-guard.js"></script>
+</head>
+<body>
+
+<div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-brand"><img src="../assets/logo/logo.png" alt="AKPO TECH"></div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="sidebar-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="clients.html" class="sidebar-link"><i class="bi bi-people"></i> Clients</a>
+            <a href="services.html" class="sidebar-link"><i class="bi bi-tools"></i> Services</a>
+            <a href="projects.html" class="sidebar-link"><i class="bi bi-folder"></i> Projets</a>
+            <a href="invoices.html" class="sidebar-link"><i class="bi bi-receipt"></i> Factures</a>
+            <a href="payments.html" class="sidebar-link"><i class="bi bi-credit-card"></i> Paiements</a>
+            <a href="messages.html" class="sidebar-link"><i class="bi bi-envelope"></i> Messages</a>
+            <a href="statistiques.html" class="sidebar-link"><i class="bi bi-bar-chart"></i> Statistiques</a>
+            <a href="settings.html" class="sidebar-link"><i class="bi bi-gear"></i> Paramètres</a>
+        </nav>
+        <button class="sidebar-logout" onclick="AkpoGuard.logout('../auth/admin-login.html')"><i class="bi bi-box-arrow-right"></i> Déconnexion</button>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dashboard-header"><h1>Profil administrateur</h1></div>
+        <div class="card text-center" style="max-width:400px;">
+            <div id="adminAvatar" class="rounded-circle bg-primary d-flex align-items-center justify-content-center text-white fw-bold mx-auto mb-3" style="width:80px;height:80px;font-size:2rem;">A</div>
+            <h4 id="adminName">Administrateur</h4>
+            <p class="text-muted" id="adminEmail">&mdash;</p>
+            <a href="settings.html" class="btn btn-outline-primary btn-sm">Modifier le mot de passe</a>
+        </div>
+    </main>
+</div>
+
+<script>
+
+    AkpoGuard.requireAdmin(function(user, profile) {
+        var nom = (profile && profile.nom) || 'Administrateur';
+        document.getElementById('adminName').textContent = nom;
+        document.getElementById('adminEmail').textContent = user.email;
+        document.getElementById('adminAvatar').textContent = nom.charAt(0).toUpperCase();
+    });
+</script>
+</body>
+</html>

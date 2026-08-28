@@ -1,0 +1,303 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Mon profil | AKPO TECH SOLUTIONS</title>
+    <meta name="robots" content="noindex, nofollow">
+    
+    <link rel="icon" type="image/png" href="../assets/logo/logo.png">
+    <meta name="theme-color" content="#3B82F6">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/reset.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    
+    <style>
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .toast-success { background: #10B981; }
+        .toast-error { background: #EF4444; }
+        .toast-info { background: #3B82F6; }
+        
+        .profile-avatar {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            background: #3B82F6;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 2.5rem;
+            font-weight: 700;
+            margin: 0 auto 16px;
+        }
+        .profile-section {
+            background: white;
+            border: 1px solid #E2E8F0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+        }
+        .profile-section .section-title {
+            font-size: 1rem;
+            font-weight: 600;
+            color: #0F172A;
+            margin-bottom: 16px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .profile-section .section-title i {
+            color: #3B82F6;
+        }
+    </style>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="../assets/js/session-guard.js"></script>
+</head>
+<body>
+
+    <div class="dashboard-layout">
+        
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-brand">
+                <a href="../index.html"><img src="../assets/logo/logo.png" alt="AKPO TECH" style="height:36px;"></a>
+                <small style="color:#94A3B8;display:block;font-size:0.7rem;">Espace Client</small>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="sidebar-link"><i class="bi bi-speedometer2"></i> Tableau de bord</a>
+                <a href="profile.html" class="sidebar-link active"><i class="bi bi-person"></i> Mon profil</a>
+                <a href="invoices.html" class="sidebar-link"><i class="bi bi-receipt"></i> Factures</a>
+                <a href="payments.html" class="sidebar-link"><i class="bi bi-credit-card"></i> Paiements</a>
+                <a href="history.html" class="sidebar-link"><i class="bi bi-clock-history"></i> Historique</a>
+                <a href="support.html" class="sidebar-link"><i class="bi bi-headset"></i> Support</a>
+                <a href="settings.html" class="sidebar-link"><i class="bi bi-gear"></i> Paramètres</a>
+            </nav>
+            <div style="margin-top:auto;">
+                <a href="../index.html" class="sidebar-link" style="color:#94A3B8;"><i class="bi bi-arrow-left"></i> Retour au site</a>
+                <button class="sidebar-logout" onclick="handleLogout()"><i class="bi bi-box-arrow-right"></i> Déconnexion</button>
+            </div>
+        </aside>
+
+        
+        <main class="dashboard-main">
+            
+            <div class="dashboard-header">
+                <h1><i class="bi bi-person"></i> Mon profil</h1>
+                <span class="text-muted">Gérer vos informations personnelles</span>
+            </div>
+
+            
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="profile-section text-center">
+                        <div class="profile-avatar" id="avatarLetter">A</div>
+                        <h5 id="displayName">Chargement...</h5>
+                        <p class="text-muted" id="userEmail"><a href="mailto:contact@akpotechsolutions.com">contact@akpotechsolutions.com</a></p>
+                        <span class="badge bg-success" id="userType">Particulier</span>
+                    </div>
+                </div>
+                <div class="col-md-8">
+                    
+                    <div class="profile-section">
+                        <div class="section-title"><i class="bi bi-pencil-square"></i> Modifier mes informations</div>
+                        <form id="profileForm">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label"><i class="bi bi-person"></i> Nom complet</label>
+                                        <input type="text" class="form-control" id="pNom" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label"><i class="bi bi-envelope"></i> Email</label>
+                                        <input type="email" class="form-control" id="pEmail" disabled>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label"><i class="bi bi-phone"></i> Téléphone</label>
+                                        <input type="tel" class="form-control" id="pTéléphone" placeholder="Ex: 01 90 00 00 01">
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="mb-3">
+                                        <label class="form-label"><i class="bi bi-building"></i> Type de client</label>
+                                        <select class="form-control" id="pType">
+                                            <option value="particulier">Particulier</option>
+                                            <option value="entreprise">Entreprise</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="mb-3">
+                                <label class="form-label"><i class="bi bi-geo-alt"></i> Adresse</label>
+                                <input type="text" class="form-control" id="pAdresse" placeholder="Ex: Cotonou, Quartier Zongo">
+                            </div>
+                            <button type="submit" class="btn btn-primary"><i class="bi bi-save"></i> Mettre a jour</button>
+                        </form>
+                    </div>
+
+                    
+                    <div class="profile-section">
+                        <div class="section-title"><i class="bi bi-lock"></i> Changer le mot de passe</div>
+                        <form id="passwordForm">
+                            <div class="row">
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Mot de passe actuel</label>
+                                        <input type="password" class="form-control" id="currentPassword" placeholder="••••••••" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Nouveau mot de passe</label>
+                                        <input type="password" class="form-control" id="newPassword" placeholder="•••••••• (min 6)" required>
+                                    </div>
+                                </div>
+                                <div class="col-md-4">
+                                    <div class="mb-3">
+                                        <label class="form-label">Confirmer</label>
+                                        <input type="password" class="form-control" id="confirmPassword" placeholder="••••••••" required>
+                                    </div>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-warning"><i class="bi bi-key"></i> Changer le mot de passe</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    
+    <div id="toast" class="toast-notification"></div>
+
+    <script>
+
+        
+        
+        
+
+        let currentUser = null;
+        let userData = null;
+
+        AkpoGuard.requireAuth(async function(user, profile) {
+            currentUser = user;
+            await loadProfile();
+        });
+
+        async function loadProfile() {
+            const doc = await db.collection('clients').doc(currentUser.uid).get();
+            userData = doc.data();
+
+            if (userData) {
+                document.getElementById('pNom').value = userData.nom || '';
+                document.getElementById('pEmail').value = currentUser.email;
+                document.getElementById('pTéléphone').value = userData.téléphone || '';
+                document.getElementById('pType').value = userData.typeClient || 'particulier';
+                document.getElementById('pAdresse').value = userData.adresse || '';
+
+                document.getElementById('displayName').textContent = userData.nom || 'Client';
+                document.getElementById('userEmail').textContent = currentUser.email;
+                document.getElementById('userType').textContent = userData.typeClient === 'entreprise' ? 'Entreprise' : 'Particulier';
+                document.getElementById('avatarLetter').textContent = (userData.nom || 'C').charAt(0).toUpperCase();
+            }
+        }
+
+        document.getElementById('profileForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const updates = {
+                nom: document.getElementById('pNom').value.trim(),
+                téléphone: document.getElementById('pTéléphone').value.trim(),
+                typeClient: document.getElementById('pType').value,
+                adresse: document.getElementById('pAdresse').value.trim()
+            };
+
+            try {
+                await db.collection('clients').doc(currentUser.uid).update(updates);
+                showToast('Profil mis a jour avec succes', 'success');
+                await loadProfile();
+            } catch(error) {
+                showToast('Erreur : ' + error.message, 'error');
+            }
+        });
+
+        document.getElementById('passwordForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+
+            const current = document.getElementById('currentPassword').value;
+            const newPass = document.getElementById('newPassword').value;
+            const confirm = document.getElementById('confirmPassword').value;
+
+            if (newPass.length < 6) {
+                showToast('Le nouveau mot de passe doit contenir au moins 6 caracteres', 'error');
+                return;
+            }
+            if (newPass !== confirm) {
+                showToast('Les mots de passe ne correspondent pas', 'error');
+                return;
+            }
+
+            try {
+                const credential = firebase.auth.EmailAuthProvider.credential(currentUser.email, current);
+                await currentUser.reauthenticateWithCredential(credential);
+                await currentUser.updatePassword(newPass);
+                this.reset();
+                showToast('Mot de passe change avec succes', 'success');
+            } catch(error) {
+                if (error.code === 'auth/wrong-password') {
+                    showToast('Mot de passe actuel incorrect', 'error');
+                } else {
+                    showToast('Erreur : ' + error.message, 'error');
+                }
+            }
+        });
+
+        async function handleLogout() {
+            await AkpoGuard.logout('../auth/login.html');
+        }
+
+        function showToast(message, type = 'info') {
+            const toast = document.getElementById('toast');
+            toast.textContent = message;
+            toast.className = 'toast-notification toast-' + type + ' show';
+            clearTimeout(toast._timeout);
+            toast._timeout = setTimeout(() => {
+                toast.classList.remove('show');
+            }, 3000);
+        }
+    </script>
+</body>
+</html>

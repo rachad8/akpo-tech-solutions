@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Demandes | Administration AKPO TECH</title>
+    <meta name="robots" content="noindex, nofollow">
+    
+    <link rel="icon" type="image/png" href="../assets/logo/logo.png">
+    <meta name="theme-color" content="#3B82F6">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/reset.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="../assets/js/session-guard.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    <script src="../assets/js/payment.js"></script>
+    
+    <style>
+        .stat-card-clickable { cursor: pointer; transition: all 0.2s; }
+        .stat-card-clickable:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        .modal-backdrop-admin { position: fixed; inset: 0; background: rgba(0,0,0,0.5); z-index: 999; display: none; align-items: center; justify-content: center; }
+        .modal-backdrop-admin.active { display: flex; }
+        .modal-admin { background: white; border-radius: 16px; padding: 24px; width: 90%; max-width: 600px; max-height: 80vh; overflow-y: auto; }
+        .badge-notif { font-size: 0.65rem !important; padding: 3px 8px; border-radius: 20px; margin-left: auto; }
+        .badge-notif.bg-danger { background: #EF4444 !important; }
+        .statut-select { min-width: 120px; }
+        .btn-action { padding: 4px 8px; font-size: 0.8rem; }
+        .urgent-badge { background: #FEF2F2; color: #EF4444; border: 1px solid #FECACA; }
+        .normal-badge { background: #EFF6FF; color: #3B82F6; border: 1px solid #BFDBFE; }
+        .critique-badge { background: #FEF2F2; color: #DC2626; border: 1px solid #FECACA; animation: pulse 2s infinite; }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.6; } }
+    </style>
+</head>
+<body>
+
+    
+    <div id="adminLogin" style="min-height:100vh;display:flex;align-items:center;justify-content:center;background:linear-gradient(160deg,#FFFFFF 0%,#EFF6FF 50%,#DBEAFE 100%);padding:24px;">
+        <div style="background:white;border-radius:20px;padding:40px 32px;box-shadow:0 20px 50px rgba(0,0,0,0.1);width:100%;max-width:440px;">
+            <div style="text-align:center;margin-bottom:28px;">
+                <a href="../index.html"><img src="../assets/logo/logo.png" alt="AKPO TECH" style="height:48px;"></a>
+                <h2 style="margin-top:16px;font-size:1.2rem;font-weight:700;color:#0F172A;"><i class="bi bi-shield-lock"></i> Administration</h2>
+                <p style="font-size:0.85rem;color:#94A3B8;">Connectez-vous pour gérer le site</p>
+            </div>
+            <div id="loginError" style="padding:10px;border-radius:8px;margin-bottom:14px;font-size:0.85rem;display:none;"></div>
+            <p style="font-size:0.9rem;color:#64748B;text-align:center;margin-bottom:20px;">
+                L'authentification administrateur se fait sur la page de connexion securisee.
+            </p>
+            <a href="../auth/admin-login.html" style="display:block;text-align:center;width:100%;padding:13px;font-size:0.95rem;font-weight:600;border-radius:50px;background:linear-gradient(135deg,#3B82F6,#60A5FA);color:white;text-decoration:none;">
+                <i class="bi bi-shield-lock"></i> Aller a la connexion administrateur
+            </a>
+            <div style="text-align:center;margin-top:16px;">
+                <a href="../index.html" style="color:#64748B;font-size:0.85rem;text-decoration:none;"><i class="bi bi-arrow-left"></i> Retour au site</a>
+            </div>
+        </div>
+    </div>
+
+    
+    <div id="adminDashboard" class="dashboard-layout" style="display:none;">
+        
+        <aside class="dashboard-sidebar">
+            <div class="sidebar-brand">
+                <a href="../index.html"><img src="../assets/logo/logo.png" alt="AKPO TECH" style="height:36px;"></a>
+                <small style="color:#94A3B8;display:block;font-size:0.7rem;">Administration</small>
+            </div>
+            <nav class="sidebar-nav">
+                <a href="index.html" class="sidebar-link">
+                    <i class="bi bi-speedometer2"></i> Tableau de bord
+                </a>
+                <a href="demandes.html" class="sidebar-link active">
+                    <i class="bi bi-list-check"></i> Demandes
+                    <span class="badge bg-danger badge-notif" id="badgeDemandes" style="display:none;">0</span>
+                </a>
+                <a href="messages.html" class="sidebar-link">
+                    <i class="bi bi-envelope"></i> Messages
+                    <span class="badge bg-danger badge-notif" id="badgeMessages" style="display:none;">0</span>
+                </a>
+                <a href="clients.html" class="sidebar-link">
+                    <i class="bi bi-people"></i> Clients
+                </a>
+                <a href="invoices.html" class="sidebar-link">
+                    <i class="bi bi-receipt"></i> Factures
+                </a>
+                <a href="commentaires.html" class="sidebar-link">
+                    <i class="bi bi-chat-square-text"></i> Commentaires
+                </a>
+                <a href="statistiques.html" class="sidebar-link">
+                    <i class="bi bi-bar-chart"></i> Statistiques
+                </a>
+                <a href="settings.html" class="sidebar-link">
+                    <i class="bi bi-gear"></i> Paramètres
+                </a>
+            </nav>
+            <div style="margin-top:auto;">
+                <a href="../index.html" class="sidebar-link" style="color:#94A3B8;">
+                    <i class="bi bi-arrow-left"></i> Retour au site
+                </a>
+                <button class="sidebar-logout" onclick="AkpoGuard.logout('../auth/admin-login.html')">
+                    <i class="bi bi-box-arrow-right"></i> Déconnexion
+                </button>
+            </div>
+        </aside>
+
+        <main class="dashboard-main">
+            
+            
+            <div class="dashboard-header">
+                <h1><i class="bi bi-list-check"></i> Demandes clients</h1>
+                <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                    <input type="text" class="form-control form-control-sm" placeholder="🔍 Rechercher..." id="searchDemandes" oninput="filterDemandes()" style="width:200px;">
+                    <select class="form-select form-select-sm" id="filterStatut" onchange="filterDemandes()" style="width:150px;">
+                        <option value="tous">📋 Tous</option>
+                        <option value="en-attente">⏳ En attente</option>
+                        <option value="en-cours">🔄 En cours</option>
+                        <option value="termine">✅ Terminé</option>
+                    </select>
+                    <button class="btn btn-primary btn-sm" onclick="loadAllData()">
+                        <i class="bi bi-arrow-repeat"></i> Actualiser
+                    </button>
+                </div>
+            </div>
+
+            
+            <div class="dashboard-stats" style="margin-bottom:20px;">
+                <div class="dashboard-stat-card">
+                    <div class="dashboard-stat-icon bg-primary bg-opacity-10 text-primary">
+                        <i class="bi bi-list-check"></i>
+                    </div>
+                    <div>
+                        <div class="dashboard-stat-value" id="statAll">0</div>
+                        <div class="dashboard-stat-label">Total</div>
+                    </div>
+                </div>
+                <div class="dashboard-stat-card">
+                    <div class="dashboard-stat-icon bg-warning bg-opacity-10 text-warning">
+                        <i class="bi bi-clock"></i>
+                    </div>
+                    <div>
+                        <div class="dashboard-stat-value" id="statAttente">0</div>
+                        <div class="dashboard-stat-label">En attente</div>
+                    </div>
+                </div>
+                <div class="dashboard-stat-card">
+                    <div class="dashboard-stat-icon bg-info bg-opacity-10 text-info">
+                        <i class="bi bi-hourglass-split"></i>
+                    </div>
+                    <div>
+                        <div class="dashboard-stat-value" id="statCours">0</div>
+                        <div class="dashboard-stat-label">En cours</div>
+                    </div>
+                </div>
+                <div class="dashboard-stat-card">
+                    <div class="dashboard-stat-icon bg-success bg-opacity-10 text-success">
+                        <i class="bi bi-check-circle"></i>
+                    </div>
+                    <div>
+                        <div class="dashboard-stat-value" id="statTermine">0</div>
+                        <div class="dashboard-stat-label">Terminé</div>
+                    </div>
+                </div>
+            </div>
+
+            
+            <div class="dashboard-table-card">
+                <div class="dashboard-table-header">
+                    <h3><i class="bi bi-list-ul"></i> Liste des demandes</h3>
+                    <span class="text-muted" id="demandesCount">0 demande(s)</span>
+                </div>
+                <div class="table-responsive">
+                    <table class="dashboard-table">
+                        <thead>
+                            <tr>
+                                <th>Réf</th>
+                                <th>Client</th>
+                                <th>Tél</th>
+                                <th>Service</th>
+                                <th>Urgence</th>
+                                <th>Statut</th>
+                                <th>Date</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="allDemandes">
+                            <tr>
+                                <td colspan="8" class="text-center text-muted py-4">
+                                    <i class="bi bi-inbox fs-1 d-block"></i>
+                                    <p class="mt-2">Aucune demande trouvée</p>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+        </main>
+    </div>
+
+    
+    <div class="modal-backdrop-admin" id="modalBackdrop">
+        <div class="modal-admin" id="modalContent"></div>
+    </div>
+
+    
+    <script>
+
+        
+        
+        
+
+        let allDemandes = [], allMessages = [], allClients = [];
+
+        AkpoGuard.requireAdmin(async function(user, profile) {
+                var inlineLogin = document.getElementById('adminLogin');
+                if (inlineLogin) inlineLogin.style.display = 'none';
+                document.getElementById('adminDashboard').style.display = 'flex';
+                await loadAllData();
+                listenRealtime();
+            });
+
+        async function loadAllData() {
+            allDemandes = [];
+            allClients = [];
+
+            const cs = await db.collection('clients').get();
+            for (const cd of cs.docs) {
+                const cdData = cd.data();
+                allClients.push({ id: cd.id, ...cdData });
+                const ds = await db.collection('clients').doc(cd.id).collection('demandes').orderBy('date','desc').get();
+                ds.forEach(d => allDemandes.push({
+                    id: d.id,
+                    clientId: cd.id,
+                    clientNom: cdData.nom || 'Inconnu',
+                    clientTéléphone: cdData.téléphone || '',
+                    clientEmail: cdData.email || '',
+                    ...d.data()
+                }));
+            }
+
+            const ms = await db.collection('contacts').orderBy('date','desc').get();
+            allMessages = [];
+            ms.forEach(d => allMessages.push({ id: d.id, ...d.data() }));
+
+            updateStats();
+            updateTable();
+            updateBadges();
+        }
+
+        function updateStats() {
+            const total = allDemandes.length;
+            const attente = allDemandes.filter(d => d.statut === 'en-attente').length;
+            const cours = allDemandes.filter(d => d.statut === 'en-cours').length;
+            const termine = allDemandes.filter(d => d.statut === 'termine').length;
+
+            document.getElementById('statAll').textContent = total;
+            document.getElementById('statAttente').textContent = attente;
+            document.getElementById('statCours').textContent = cours;
+            document.getElementById('statTermine').textContent = termine;
+            document.getElementById('demandesCount').textContent = total + ' demande(s)';
+        }
+
+        function updateTable(filtered) {
+            const data = filtered || allDemandes;
+            const tbody = document.getElementById('allDemandes');
+
+            if (data.length === 0) {
+                tbody.innerHTML = `
+                    <tr>
+                        <td colspan="8" class="text-center text-muted py-4">
+                            <i class="bi bi-inbox fs-1 d-block"></i>
+                            <p class="mt-2">Aucune demande trouvée</p>
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+
+            tbody.innerHTML = data.map(d => `
+                <tr>
+                    <td><strong>${d.id}</strong></td>
+                    <td>${d.clientNom}</td>
+                    <td>${d.clientTéléphone}</td>
+                    <td>${d.service}</td>
+                    <td><span class="badge ${urgenceClass(d.urgence)}">${urgenceLabel(d.urgence)}</span></td>
+                    <td>
+                        <select class="form-select form-select-sm statut-select" onchange="changeStatut('${d.clientId}','${d.id}',this.value)">
+                            <option value="en-attente" ${d.statut === 'en-attente' ? 'selected' : ''}>⏳ En attente</option>
+                            <option value="en-cours" ${d.statut === 'en-cours' ? 'selected' : ''}>🔄 En cours</option>
+                            <option value="termine" ${d.statut === 'termine' ? 'selected' : ''}>✅ Terminé</option>
+                        </select>
+                    </td>
+                    <td>${formatDate(d.date)}</td>
+                    <td>
+                        <button class="btn btn-sm btn-outline-primary btn-action" onclick="showDetail('${d.clientId}','${d.id}')" title="Voir détails">
+                            <i class="bi bi-eye"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-success btn-action" onclick="createFactureFromDemande('${d.clientId}','${d.id}')" title="Créer une facture">
+                            <i class="bi bi-receipt"></i>
+                        </button>
+                        <button class="btn btn-sm btn-outline-danger btn-action" onclick="deleteDemande('${d.clientId}','${d.id}')" title="Supprimer">
+                            <i class="bi bi-trash"></i>
+                        </button>
+                    </td>
+                </tr>
+            `).join('');
+        }
+
+        function updateBadges() {
+            const nbAttente = allDemandes.filter(d => d.statut === 'en-attente').length;
+            const badgeDemandes = document.getElementById('badgeDemandes');
+            if (nbAttente > 0) {
+                badgeDemandes.style.display = 'inline';
+                badgeDemandes.textContent = nbAttente;
+            } else {
+                badgeDemandes.style.display = 'none';
+            }
+
+            const nbMsgNonLus = allMessages.filter(m => !m.lu).length;
+            const badgeMessages = document.getElementById('badgeMessages');
+            if (nbMsgNonLus > 0) {
+                badgeMessages.style.display = 'inline';
+                badgeMessages.textContent = nbMsgNonLus;
+            } else {
+                badgeMessages.style.display = 'none';
+            }
+        }
+
+        function filterDemandes() {
+            const s = document.getElementById('searchDemandes').value.toLowerCase();
+            const st = document.getElementById('filterStatut').value;
+            updateTable(allDemandes.filter(d =>
+                (d.clientNom.toLowerCase().includes(s) || d.id.toLowerCase().includes(s)) &&
+                (st === 'tous' || d.statut === st)
+            ));
+        }
+
+        async function changeStatut(cid, did, ns) {
+            await db.collection('clients').doc(cid).collection('demandes').doc(did).update({ statut: ns });
+            const d = allDemandes.find(d => d.id === did);
+            if (d) d.statut = ns;
+            updateStats();
+            updateTable();
+            updateBadges();
+        }
+
+        async function deleteDemande(cid, did) {
+            if (!confirm('⚠️ Supprimer cette demande ? Cette action est irréversible.')) return;
+            await db.collection('clients').doc(cid).collection('demandes').doc(did).delete();
+            allDemandes = allDemandes.filter(d => d.id !== did);
+            updateStats();
+            updateTable();
+            updateBadges();
+        }
+
+        function createFactureFromDemande(cid, did) {
+            const d = allDemandes.find(d => d.id === did);
+            if (!d) return;
+            showCreateFacture(d);
+        }
+
+        function showDetail(cid, did) {
+            const d = allDemandes.find(d => d.id === did);
+            if (!d) return;
+            document.getElementById('modalContent').innerHTML = `
+                <h4><i class="bi bi-info-circle"></i> Détail de la demande</h4>
+                <hr>
+                <div class="row">
+                    <div class="col-md-6">
+                        <p><strong>Réf :</strong> ${d.id}</p>
+                        <p><strong>Client :</strong> ${d.clientNom}</p>
+                        <p><strong>Tél :</strong> ${d.clientTéléphone}</p>
+                        <p><strong>Email :</strong> ${d.clientEmail}</p>
+                    </div>
+                    <div class="col-md-6">
+                        <p><strong>Service :</strong> ${d.service}</p>
+                        <p><strong>Urgence :</strong> <span class="badge ${urgenceClass(d.urgence)}">${urgenceLabel(d.urgence)}</span></p>
+                        <p><strong>Statut :</strong> <span class="badge bg-${statusColor(d.statut)}">${statusLabel(d.statut)}</span></p>
+                        <p><strong>Date :</strong> ${formatDate(d.date)}</p>
+                    </div>
+                </div>
+                <hr>
+                <p><strong>📝 Description :</strong></p>
+                <p>${d.description || 'Aucune description'}</p>
+                <p><strong>📍 Adresse :</strong> ${d.adresse || 'Non spécifiée'}</p>
+                <button class="btn btn-primary mt-3" onclick="closeModal()">
+                    <i class="bi bi-x-circle"></i> Fermer
+                </button>
+            `;
+            document.getElementById('modalBackdrop').classList.add('active');
+        }
+
+        function showCreateFacture(d) {
+            document.getElementById('modalContent').innerHTML = `
+                <h4><i class="bi bi-plus-circle"></i> Créer une facture</h4>
+                <hr>
+                <form onsubmit="return createFacture(event)">
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-person"></i> Client</label>
+                        <input type="text" class="form-control" value="${d.clientNom}" disabled>
+                        <input type="hidden" id="fClient" value="${d.clientId}">
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-tools"></i> Service</label>
+                        <input type="text" class="form-control" id="fService" value="${d.service}" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-coin"></i> Montant (FCFA)</label>
+                        <input type="number" class="form-control" id="fMontant" placeholder="Ex: 25000" required>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label"><i class="bi bi-file-text"></i> Description</label>
+                        <textarea class="form-control" id="fDesc" rows="2">${d.description || ''}</textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">
+                        <i class="bi bi-check"></i> Créer la facture
+                    </button>
+                    <button type="button" class="btn btn-secondary ms-2" onclick="closeModal()">
+                        <i class="bi bi-x"></i> Annuler
+                    </button>
+                </form>
+            `;
+            document.getElementById('modalBackdrop').classList.add('active');
+        }
+
+        async function createFacture(e) {
+            e.preventDefault();
+            const cid = document.getElementById('fClient').value;
+            const c = allClients.find(x => x.id === cid);
+            const result = await FacturationAPI.createFacture({
+                clientId: cid,
+                clientNom: c.nom,
+                clientEmail: c.email,
+                clientTéléphone: c.téléphone,
+                service: document.getElementById('fService').value,
+                montant: parseInt(document.getElementById('fMontant').value),
+                description: document.getElementById('fDesc').value
+            });
+            if (result.success) {
+                alert('✅ Facture créée avec succès !');
+                closeModal();
+            } else {
+                alert('❌ Erreur : ' + result.error);
+            }
+            return false;
+        }
+
+        function closeModal() {
+            document.getElementById('modalBackdrop').classList.remove('active');
+        }
+
+        document.getElementById('modalBackdrop').addEventListener('click', function(e) {
+            if (e.target === this) closeModal();
+        });
+
+        function listenRealtime() {
+            db.collectionGroup('demandes').orderBy('date', 'desc')
+                .onSnapshot(async () => { await loadAllData(); });
+            
+            db.collection('contacts').orderBy('date', 'desc')
+                .onSnapshot(async () => { 
+                    allMessages = [];
+                    const ms = await db.collection('contacts').orderBy('date','desc').get();
+                    ms.forEach(d => allMessages.push({ id: d.id, ...d.data() }));
+                    updateBadges();
+                });
+        }
+
+        function formatDate(d) {
+            if (!d) return '';
+            const dt = d.toDate ? d.toDate() : new Date(d);
+            return dt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+        }
+
+        function statusLabel(s) {
+            const l = { 'en-attente': 'En attente', 'en-cours': 'En cours', 'termine': 'Terminé' };
+            return l[s] || s;
+        }
+
+        function statusColor(s) {
+            const c = { 'en-attente': 'warning', 'en-cours': 'info', 'termine': 'success' };
+            return c[s] || 'secondary';
+        }
+
+        function urgenceLabel(u) {
+            const l = { 'normal': 'Normal', 'urgent': 'Urgent', 'critique': 'Critique' };
+            return l[u] || u;
+        }
+
+        function urgenceClass(u) {
+            const c = { 'normal': 'normal-badge', 'urgent': 'urgent-badge', 'critique': 'critique-badge' };
+            return c[u] || 'normal-badge';
+        }
+    </script>
+</body>
+</html>

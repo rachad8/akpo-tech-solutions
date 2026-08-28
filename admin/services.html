@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Services | Administration AKPO TECH</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="../assets/logo/logo.png">
+    <meta name="theme-color" content="#3B82F6">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/reset.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="../assets/js/session-guard.js"></script>
+</head>
+<body>
+
+<div class="dashboard-layout">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-brand"><img src="../assets/logo/logo.png" alt="AKPO TECH"></div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="sidebar-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="clients.html" class="sidebar-link"><i class="bi bi-people"></i> Clients</a>
+            <a href="services.html" class="sidebar-link active"><i class="bi bi-tools"></i> Services</a>
+            <a href="projects.html" class="sidebar-link"><i class="bi bi-folder"></i> Projets</a>
+            <a href="invoices.html" class="sidebar-link"><i class="bi bi-receipt"></i> Factures</a>
+            <a href="payments.html" class="sidebar-link"><i class="bi bi-credit-card"></i> Paiements</a>
+            <a href="messages.html" class="sidebar-link"><i class="bi bi-envelope"></i> Messages</a>
+            <a href="statistiques.html" class="sidebar-link"><i class="bi bi-bar-chart"></i> Statistiques</a>
+            <a href="settings.html" class="sidebar-link"><i class="bi bi-gear"></i> Paramètres</a>
+        </nav>
+        <button class="sidebar-logout" onclick="AkpoGuard.logout('../auth/admin-login.html')"><i class="bi bi-box-arrow-right"></i> Déconnexion</button>
+    </aside>
+
+    <main class="dashboard-main">
+        <div class="dashboard-header"><h1>Services les plus demandés</h1></div>
+        <div class="dashboard-stats" id="servicesStats"></div>
+        <div class="card mt-4"><h4 class="mb-3">Ajouter un service</h4>
+            <form id="serviceForm"><div class="row g-3">
+                <div class="col-md-4"><input type="text" class="form-control" id="serviceNom" placeholder="Nom du service" required></div>
+                <div class="col-md-4"><input type="text" class="form-control" id="serviceIcone" placeholder="Icône Bootstrap (ex: bi-windows)" required></div>
+                <div class="col-md-2"><select class="form-control" id="serviceCategorie"><option value="particulier">Particulier</option><option value="entreprise">Entreprise</option></select></div>
+                <div class="col-md-2"><button type="submit" class="btn btn-primary w-100"><i class="bi bi-plus"></i> Ajouter</button></div>
+            </div></form>
+        </div>
+    </main>
+</div>
+
+<script>
+
+    
+    
+    
+
+    AkpoGuard.requireAdmin(function(user, profile) {
+        loadStats();
+    });
+
+    async function loadStats() {
+        const clientsSnap = await db.collection('clients').get();
+        const counts = {};
+        for (const clientDoc of clientsSnap.docs) {
+            const demandesSnap = await db.collection('clients').doc(clientDoc.id).collection('demandes').get();
+            demandesSnap.forEach(doc => { const d = doc.data(); counts[d.service] = (counts[d.service]||0)+1; });
+        }
+        const sorted = Object.entries(counts).sort((a,b) => b[1]-a[1]);
+        document.getElementById('servicesStats').innerHTML = sorted.length === 0 ? '<p class="text-muted">Aucune donnée</p>' :
+            sorted.map(s => `<div class="dashboard-stat-card"><div class="dashboard-stat-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-tools"></i></div><div><div class="dashboard-stat-value">${s[1]}</div><div class="dashboard-stat-label">${s[0]}</div></div></div>`).join('');
+    }
+
+    document.getElementById('serviceForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        const nom = document.getElementById('serviceNom').value;
+        const icone = document.getElementById('serviceIcone').value;
+        const categorie = document.getElementById('serviceCategorie').value;
+        db.collection('services').add({ nom, icone, categorie, date: firebase.firestore.FieldValue.serverTimestamp() })
+            .then(() => { this.reset(); alert('Service ajouté !'); })
+            .catch(err => alert('Erreur : ' + err.message));
+    });
+</script>
+</body>
+</html>

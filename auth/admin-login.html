@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Connexion Admin | AKPO TECH SOLUTIONS</title>
+    <meta name="robots" content="noindex, nofollow">
+    
+    <link rel="icon" type="image/png" href="../assets/logo/logo.png">
+    <meta name="theme-color" content="#3B82F6">
+    
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/reset.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/auth.css">
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="../assets/js/session-guard.js"></script>
+    
+    <style>
+        .auth-container {
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: linear-gradient(160deg, #0F172A 0%, #1E293B 50%, #0F172A 100%);
+            padding: 24px;
+        }
+        .auth-card {
+            background: white;
+            border-radius: 24px;
+            padding: 48px 40px;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            width: 100%;
+            max-width: 440px;
+        }
+        .auth-logo { text-align: center; margin-bottom: 32px; }
+        .auth-logo img { height: 48px; }
+        .auth-logo h1 { font-size: 1.5rem; font-weight: 700; color: #0F172A; margin-top: 16px; }
+        .auth-logo p { color: #94A3B8; font-size: 0.9rem; }
+        .admin-badge { display: inline-block; background: #3B82F6; color: white; padding: 4px 16px; border-radius: 50px; font-size: 0.7rem; font-weight: 700; text-transform: uppercase; letter-spacing: 0.5px; margin-top: 4px; }
+        
+        .auth-message { padding: 12px 16px; border-radius: 10px; font-size: 0.85rem; margin-bottom: 16px; display: none; }
+        .auth-message.error { display: block; background: #FEF2F2; color: #EF4444; border: 1px solid #FECACA; }
+        .auth-message.success { display: block; background: #F0FDF4; color: #16A34A; border: 1px solid #BBF7D0; }
+        
+        .form-group { margin-bottom: 18px; }
+        .form-group .form-label { display: block; font-size: 0.85rem; font-weight: 600; color: #0F172A; margin-bottom: 6px; }
+        .form-control { width: 100%; padding: 12px 16px; border: 2px solid #E2E8F0; border-radius: 10px; font-size: 0.9rem; transition: all 0.3s; background: white; }
+        .form-control:focus { border-color: #3B82F6; outline: none; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
+        
+        .input-icon-wrapper { position: relative; }
+        .input-icon-wrapper input { padding-right: 44px; }
+        .input-icon-wrapper .password-toggle { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: none; border: none; color: #94A3B8; cursor: pointer; }
+        
+        .auth-submit { width: 100%; padding: 14px; border-radius: 50px; font-weight: 600; font-size: 0.95rem; border: none; cursor: pointer; transition: all 0.3s; background: linear-gradient(135deg, #3B82F6, #60A5FA); color: white; }
+        .auth-submit:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 4px 20px rgba(59, 130, 246, 0.35); }
+        .auth-submit:disabled { opacity: 0.7; cursor: not-allowed; }
+        
+        .auth-footer { text-align: center; margin-top: 20px; }
+        .auth-footer a { color: #64748B; font-size: 0.85rem; text-decoration: none; transition: color 0.2s; }
+        .auth-footer a:hover { color: #3B82F6; }
+        .auth-footer .admin-link { color: #3B82F6; font-weight: 600; }
+        
+        .session-check { display: none; text-align: center; padding: 40px 20px; color: #64748B; }
+        .session-check.active { display: block; }
+        .session-check .spinner { width: 44px; height: 44px; border: 4px solid #E2E8F0; border-top-color: #3B82F6; border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+        @keyframes spin { to { transform: rotate(360deg); } }
+    </style>
+</head>
+<body>
+
+    <div class="auth-container">
+        <div class="auth-card">
+
+            
+            <div class="session-check" id="sessionCheck">
+                <div class="spinner"></div>
+                <p>Vérification de votre session...</p>
+            </div>
+
+            
+            <div id="authContent" style="display:none;">
+                <div class="auth-logo">
+                    <a href="../index.html"><img src="../assets/logo/logo.png" alt="AKPO TECH SOLUTIONS"></a>
+                    <span class="admin-badge"><i class="bi bi-shield-lock"></i> ADMINISTRATION</span>
+                    <h1>Connexion Admin</h1>
+                    <p>Connectez-vous pour gérer le site</p>
+                </div>
+
+                <div class="auth-message" id="authMessage"></div>
+
+                <form id="loginForm">
+                    <div class="form-group">
+                        <label class="form-label">Email administrateur</label>
+                        <input type="email" id="loginEmail" class="form-control" placeholder="admin@exemple.com" required>
+                    </div>
+                    <div class="form-group">
+                        <label class="form-label">Mot de passe</label>
+                        <div class="input-icon-wrapper">
+                            <input type="password" id="loginPassword" class="form-control" placeholder="Votre mot de passe" required>
+                            <button type="button" class="password-toggle" onclick="togglePass('loginPassword', this)">
+                                <i class="bi bi-eye"></i>
+                            </button>
+                        </div>
+                    </div>
+                    <button type="submit" class="auth-submit" id="loginBtn">
+                        <i class="bi bi-shield-lock"></i> Accéder à l'administration
+                    </button>
+                </form>
+
+                <div class="auth-footer">
+                    <a href="login.html"><i class="bi bi-arrow-left"></i> Espace client</a>
+                    <span class="mx-2 text-muted">|</span>
+                    <a href="admin-register.html" class="admin-link"><i class="bi bi-person-plus"></i> Créer un compte admin</a>
+                    <br>
+                    <a href="../index.html" class="mt-2 d-inline-block">Retour au site</a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+
+    <script>
+
+        var ADMIN_EMAIL = "contactstechsolutionsakpo@gmail.com";
+
+        var sessionCheck = document.getElementById('sessionCheck');
+        var authContent = document.getElementById('authContent');
+        var authMessage = document.getElementById('authMessage');
+        var loginBtn = document.getElementById('loginBtn');
+
+        sessionCheck.classList.add('active');
+
+        auth.onAuthStateChanged(function(user) {
+            sessionCheck.classList.remove('active');
+
+            if (user) {
+                db.collection('clients').doc(user.uid).get()
+                    .then(function(doc) {
+                        if (doc.exists && doc.data().role === 'admin') {
+                            window.location.href = '../admin/index.html';
+                        } else {
+                            auth.signOut();
+                            authContent.style.display = 'block';
+                            showMessage('❌ Ce compte n\'est pas administrateur.', 'error');
+                        }
+                    })
+                    .catch(function() {
+                        authContent.style.display = 'block';
+                    });
+            } else {
+                authContent.style.display = 'block';
+            }
+        });
+
+        function togglePass(inputId, btn) {
+            var input = document.getElementById(inputId);
+            var icon = btn.querySelector('i');
+            if (input.type === 'password') {
+                input.type = 'text';
+                icon.classList.replace('bi-eye', 'bi-eye-slash');
+            } else {
+                input.type = 'password';
+                icon.classList.replace('bi-eye-slash', 'bi-eye');
+            }
+        }
+
+        function showMessage(text, type) {
+            authMessage.className = 'auth-message ' + (type || 'error');
+            authMessage.textContent = text;
+            authMessage.style.display = 'block';
+        }
+
+        function hideMessage() {
+            authMessage.style.display = 'none';
+        }
+
+        document.getElementById('loginForm').addEventListener('submit', function(e) {
+            e.preventDefault();
+
+            var email = document.getElementById('loginEmail').value.trim();
+            var password = document.getElementById('loginPassword').value;
+
+            hideMessage();
+
+            if (!email || !password) {
+                showMessage('❌ Veuillez remplir tous les champs.', 'error');
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Connexion...';
+
+            auth.signInWithEmailAndPassword(email, password)
+                .then(function(userCredential) {
+
+                    return db.collection('clients').doc(userCredential.user.uid).get()
+                        .then(function(doc) {
+                            if (doc.exists && doc.data().role === 'admin') {
+                                window.location.href = '../admin/index.html';
+                            } else {
+                                return auth.signOut().then(function() {
+                                    showMessage('❌ Ce compte n\'est pas administrateur.', 'error');
+                                    loginBtn.disabled = false;
+                                    loginBtn.innerHTML = '<i class="bi bi-shield-lock"></i> Accéder à l\'administration';
+                                });
+                            }
+                        });
+                })
+                .catch(function(error) {
+                    console.error('❌ Erreur connexion admin:', error);
+                    var message = '❌ Email ou mot de passe incorrect.';
+                    if (error.code === 'auth/user-not-found') {
+                        message = '❌ Aucun compte trouvé avec cet email.';
+                    } else if (error.code === 'auth/too-many-requests') {
+                        message = '❌ Trop de tentatives. Réessayez plus tard.';
+                    } else if (error.code === 'auth/network-request-failed') {
+                        message = '❌ Erreur de connexion. Vérifiez votre internet.';
+                    } else {
+                        message = '❌ ' + error.message;
+                    }
+                    showMessage(message, 'error');
+                    loginBtn.disabled = false;
+                    loginBtn.innerHTML = '<i class="bi bi-shield-lock"></i> Accéder à l\'administration';
+                });
+        });
+    </script>
+</body>
+</html>

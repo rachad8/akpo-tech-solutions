@@ -1,0 +1,29 @@
+# ============================================
+# ASSETS - Fichier .htaccess
+# Protection des fichiers sensibles
+# ============================================
+
+# Empêcher le listing des dossiers
+Options -Indexes
+
+# Bloquer l'accès aux fichiers sensibles
+<FilesMatch "^(\.env|\.htaccess|\.htpasswd|config\.php|config\.js|settings\.php|settings\.js|database\.php|database\.js|secrets\.js|private\.js|admin\.js|firebase-config\.js)$">
+    Order Allow,Deny
+    Deny from all
+</FilesMatch>
+
+# Protection des fichiers JS sensibles dans assets/js
+<Files "firebase.js">
+    Order Allow,Deny
+    Deny from all
+</Files>
+
+# Mise en cache des assets (1 mois)
+<FilesMatch "\.(css|js|jpg|jpeg|png|gif|webp|svg|woff|woff2|ttf|eot|ico)$">
+    Header set Cache-Control "max-age=2592000, public, immutable"
+</FilesMatch>
+
+# Compression des assets
+<IfModule mod_deflate.c>
+    AddOutputFilterByType DEFLATE text/css text/javascript application/javascript application/json
+</IfModule>

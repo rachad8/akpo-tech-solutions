@@ -1,0 +1,727 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Clients | Administration AKPO TECH</title>
+    <meta name="robots" content="noindex, nofollow">
+    <link rel="icon" type="image/png" href="../assets/logo/logo.png">
+    <meta name="theme-color" content="#3B82F6">
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="../assets/css/variables.css">
+    <link rel="stylesheet" href="../assets/css/reset.css">
+    <link rel="stylesheet" href="../assets/css/style.css">
+    <link rel="stylesheet" href="../assets/css/components.css">
+    <link rel="stylesheet" href="../assets/css/dashboard.css">
+    
+    <style>
+        .badge-notif {
+            font-size: 0.65rem !important;
+            padding: 3px 8px;
+            border-radius: 20px;
+            margin-left: auto;
+        }
+        .badge-notif.bg-danger { background: #EF4444 !important; }
+        .btn-action { padding: 4px 8px; font-size: 0.8rem; }
+        .stat-card-clickable { cursor: pointer; transition: all 0.2s; }
+        .stat-card-clickable:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.1); }
+        
+        .modal-backdrop-admin {
+            display: none;
+            position: fixed;
+            inset: 0;
+            background: rgba(0,0,0,0.5);
+            z-index: 999;
+            align-items: center;
+            justify-content: center;
+        }
+        .modal-backdrop-admin.active { display: flex; }
+        .modal-admin {
+            background: white;
+            border-radius: 16px;
+            padding: 24px;
+            width: 90%;
+            max-width: 500px;
+            max-height: 90vh;
+            overflow-y: auto;
+        }
+        
+        .toast-notification {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            z-index: 9999;
+            padding: 16px 24px;
+            border-radius: 12px;
+            color: white;
+            font-weight: 500;
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 20px rgba(0,0,0,0.15);
+        }
+        .toast-notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+        .toast-success { background: #10B981; }
+        .toast-error { background: #EF4444; }
+        .toast-info { background: #3B82F6; }
+        
+        .client-avatar {
+            width: 36px;
+            height: 36px;
+            border-radius: 50%;
+            background: #3B82F6;
+            color: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            font-size: 0.8rem;
+        }
+        .client-avatar.green { background: #10B981; }
+        .client-avatar.purple { background: #8B5CF6; }
+        .client-avatar.orange { background: #F59E0B; }
+        .client-avatar.red { background: #EF4444; }
+        
+        .loader-container {
+            position: fixed;
+            inset: 0;
+            background: white;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 9999;
+            flex-direction: column;
+        }
+        .loader-container .spinner {
+            width: 50px;
+            height: 50px;
+            border: 4px solid #E2E8F0;
+            border-top-color: #3B82F6;
+            border-radius: 50%;
+            animation: spin 0.8s linear infinite;
+        }
+        .loader-container p {
+            margin-top: 16px;
+            color: #94A3B8;
+            font-size: 0.9rem;
+        }
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+    
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="../assets/js/session-guard.js"></script>
+    <script src="../assets/js/payment.js"></script>
+</head>
+<body>
+
+    
+    <div class="loader-container" id="loaderContainer">
+        <div class="spinner"></div>
+        <p>Vérification de vos droits...</p>
+    </div>
+
+<div class="dashboard-layout" id="dashboardContent" style="display:none;">
+    <aside class="dashboard-sidebar">
+        <div class="sidebar-brand">
+            <a href="../index.html"><img src="../assets/logo/logo.png" alt="AKPO TECH" style="height:36px;"></a>
+            <small style="color:#94A3B8;display:block;font-size:0.7rem;">Administration</small>
+        </div>
+        <nav class="sidebar-nav">
+            <a href="index.html" class="sidebar-link"><i class="bi bi-speedometer2"></i> Dashboard</a>
+            <a href="demandes.html" class="sidebar-link"><i class="bi bi-list-check"></i> Demandes</a>
+            <a href="messages.html" class="sidebar-link"><i class="bi bi-envelope"></i> Messages</a>
+            <a href="clients.html" class="sidebar-link active"><i class="bi bi-people"></i> Clients</a>
+            <a href="invoices.html" class="sidebar-link"><i class="bi bi-receipt"></i> Factures</a>
+            <a href="commentaires.html" class="sidebar-link"><i class="bi bi-chat-square-text"></i> Commentaires</a>
+            <a href="statistiques.html" class="sidebar-link"><i class="bi bi-bar-chart"></i> Statistiques</a>
+            <a href="settings.html" class="sidebar-link"><i class="bi bi-gear"></i> Paramètres</a>
+        </nav>
+        <div style="margin-top:auto;">
+            <a href="../index.html" class="sidebar-link" style="color:#94A3B8;"><i class="bi bi-arrow-left"></i> Retour au site</a>
+            <button class="sidebar-logout" onclick="handleLogout()"><i class="bi bi-box-arrow-right"></i> Déconnexion</button>
+        </div>
+    </aside>
+
+    <main class="dashboard-main">
+        
+        
+        <div class="dashboard-header">
+            <h1><i class="bi bi-people"></i> Gestion des clients</h1>
+            <div style="display:flex;gap:8px;flex-wrap:wrap;">
+                <input type="text" class="form-control form-control-sm" placeholder="Rechercher..." id="searchClients" oninput="filterClients()" style="width:200px;">
+                <select class="form-select form-select-sm" id="filterType" onchange="filterClients()" style="width:150px;">
+                    <option value="tous">Tous</option>
+                    <option value="particulier">Particuliers</option>
+                    <option value="entreprise">Entreprises</option>
+                </select>
+                <button class="btn btn-success btn-sm" onclick="exportCSV()"><i class="bi bi-file-earmark-spreadsheet"></i> Export</button>
+                <button class="btn btn-primary btn-sm" onclick="showCreateClient()"><i class="bi bi-plus-circle"></i> Ajouter</button>
+            </div>
+        </div>
+
+        
+        <div class="dashboard-stats">
+            <div class="dashboard-stat-card">
+                <div class="dashboard-stat-icon bg-primary bg-opacity-10 text-primary"><i class="bi bi-people"></i></div>
+                <div><div class="dashboard-stat-value" id="statTotal">0</div><div class="dashboard-stat-label">Total clients</div></div>
+            </div>
+            <div class="dashboard-stat-card">
+                <div class="dashboard-stat-icon bg-info bg-opacity-10 text-info"><i class="bi bi-person"></i></div>
+                <div><div class="dashboard-stat-value" id="statParticuliers">0</div><div class="dashboard-stat-label">Particuliers</div></div>
+            </div>
+            <div class="dashboard-stat-card">
+                <div class="dashboard-stat-icon bg-success bg-opacity-10 text-success"><i class="bi bi-building"></i></div>
+                <div><div class="dashboard-stat-value" id="statEntreprises">0</div><div class="dashboard-stat-label">Entreprises</div></div>
+            </div>
+            <div class="dashboard-stat-card stat-card-clickable" onclick="window.location.href='demandes.html'">
+                <div class="dashboard-stat-icon bg-warning bg-opacity-10 text-warning"><i class="bi bi-list-check"></i></div>
+                <div><div class="dashboard-stat-value" id="statDemandes">0</div><div class="dashboard-stat-label">Demandes totales</div></div>
+            </div>
+        </div>
+
+        
+        <div class="dashboard-table-card">
+            <div class="dashboard-table-header">
+                <h3><i class="bi bi-list-ul"></i> Liste des clients</h3>
+                <span class="text-muted" id="clientsCount">0 client(s)</span>
+            </div>
+            <div class="table-responsive">
+                <table class="dashboard-table">
+                    <thead>
+                        <tr>
+                            <th>Client</th>
+                            <th>Email</th>
+                            <th>Téléphone</th>
+                            <th>Type</th>
+                            <th>Inscription</th>
+                            <th>Demandes</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="clientsTable">
+                        <tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-inbox fs-1 d-block"></i><p class="mt-2">Aucun client trouvé</p></td></tr>
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
+    </main>
+</div>
+
+<div class="modal-backdrop-admin" id="clientModal">
+    <div class="modal-admin">
+        <h4 class="mb-3"><i class="bi bi-person-badge"></i> Détails du client</h4>
+        <hr>
+        <div id="clientDetails">
+            <p class="text-muted">Chargement...</p>
+        </div>
+        <button class="btn btn-secondary mt-3" onclick="closeModal()"><i class="bi bi-x"></i> Fermer</button>
+    </div>
+</div>
+
+<div class="modal-backdrop-admin" id="createClientModal">
+    <div class="modal-admin">
+        <h4 class="mb-3"><i class="bi bi-plus-circle"></i> Ajouter un client</h4>
+        <hr>
+        <form id="createClientForm">
+            <div class="mb-3">
+                <label class="form-label"><i class="bi bi-person"></i> Nom complet</label>
+                <input type="text" id="cNom" class="form-control" placeholder="Ex: Jean Dupont" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label"><i class="bi bi-envelope"></i> Email</label>
+                <input type="email" id="cEmail" class="form-control" placeholder="Ex: jean@email.com" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label"><i class="bi bi-phone"></i> Téléphone</label>
+                <input type="tel" id="cTéléphone" class="form-control" placeholder="Ex: 01 90 00 00 01">
+            </div>
+            <div class="mb-3">
+                <label class="form-label"><i class="bi bi-building"></i> Type</label>
+                <select id="cType" class="form-control">
+                    <option value="particulier">Particulier</option>
+                    <option value="entreprise">Entreprise</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label"><i class="bi bi-geo-alt"></i> Adresse</label>
+                <input type="text" id="cAdresse" class="form-control" placeholder="Ex: Cotonou, Quartier Zongo">
+            </div>
+            <div class="mb-3">
+                <label class="form-label"><i class="bi bi-lock"></i> Mot de passe</label>
+                <input type="password" id="cPassword" class="form-control" placeholder="Mot de passe (min 6 caractères)" required>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="bi bi-check"></i> Créer le client</button>
+            <button type="button" class="btn btn-secondary ms-2" onclick="closeCreateModal()"><i class="bi bi-x"></i> Annuler</button>
+        </form>
+    </div>
+</div>
+
+<div id="toast" class="toast-notification"></div>
+
+<script>
+
+    var firebaseConfig = {
+        apiKey: "AIzaSyA6EpcsDZOTsVJUyXkoqMND3zjgyTRIA6s",
+        authDomain: "akpo-tech-solutions.firebaseapp.com",
+        projectId: "akpo-tech-solutions",
+        storageBucket: "akpo-tech-solutions.firebasestorage.app",
+        messagingSenderId: "935755637623",
+        appId: "1:935755637623:web:9c28d7819b118ed21cf772"
+    };
+
+    firebase.initializeApp(firebaseConfig);
+    var auth = firebase.auth();
+    var db = firebase.firestore();
+
+    var allClients = [];
+    var allDemandes = [];
+    var currentUser = null;
+
+    function escapeHtml(str) {
+        if (!str) return '';
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;')
+            .replace(/'/g, '&#039;');
+    }
+
+    function formatDate(d) {
+        if (!d) return '';
+        var dt = d.toDate ? d.toDate() : new Date(d);
+        if (isNaN(dt.getTime())) return '';
+        return dt.toLocaleDateString('fr-FR', { day: '2-digit', month: 'short', year: 'numeric' });
+    }
+
+    function statusLabel(s) {
+        var labels = { 'en-attente': 'En attente', 'en-cours': 'En cours', 'termine': 'Terminé' };
+        return labels[s] || s;
+    }
+
+    function statusColor(s) {
+        var colors = { 'en-attente': 'warning', 'en-cours': 'info', 'termine': 'success' };
+        return colors[s] || 'secondary';
+    }
+
+    function showToast(message, type) {
+        var toast = document.getElementById('toast');
+        toast.textContent = message;
+        toast.className = 'toast-notification toast-' + (type || 'info') + ' show';
+        clearTimeout(toast._timeout);
+        toast._timeout = setTimeout(function() {
+            toast.classList.remove('show');
+        }, 3000);
+    }
+
+    function handleLogout() {
+        if (confirm('Voulez-vous vous déconnecter ?')) {
+            auth.signOut().then(function() {
+                window.location.href = '../auth/admin-login.html';
+            });
+        }
+    }
+
+    auth.onAuthStateChanged(function(user) {
+        var loader = document.getElementById('loaderContainer');
+        var dashboard = document.getElementById('dashboardContent');
+
+        if (!user) {
+            window.location.href = '../auth/admin-login.html';
+            return;
+        }
+
+        currentUser = user;
+
+        db.collection('clients').doc(user.uid).get()
+            .then(function(doc) {
+                if (doc.exists && doc.data().role === 'admin') {
+                    loader.style.display = 'none';
+                    dashboard.style.display = 'flex';
+                    loadAll();
+                    listenRealtime();
+                } else {
+
+                    if (!doc.exists) {
+                        return db.collection('clients').doc(user.uid).set({
+                            role: 'admin',
+                            nom: 'Administrateur',
+                            email: user.email,
+                            typeClient: 'admin',
+                            statut: 'actif',
+                            dateInscription: firebase.firestore.FieldValue.serverTimestamp()
+                        }).then(function() {
+                            loader.style.display = 'none';
+                            dashboard.style.display = 'flex';
+                            loadAll();
+                            listenRealtime();
+                        });
+                    } else {
+                        auth.signOut().then(function() {
+                            window.location.href = '../auth/admin-login.html';
+                        });
+                    }
+                }
+            })
+            .catch(function(error) {
+                console.error('❌ Erreur vérification admin:', error);
+
+                window.location.href = '../auth/admin-login.html';
+            });
+    });
+
+    function loadAll() {
+        allClients = [];
+        allDemandes = [];
+
+        showToast('Chargement des clients...', 'info');
+
+        db.collection('clients').get()
+            .then(function(snapshot) {
+                console.log('📊 Nombre de documents dans clients:', snapshot.size);
+                
+                if (snapshot.size === 0) {
+                    showToast('Aucun client trouvé dans la base de données', 'info');
+                    updateStats();
+                    renderTable();
+                    return;
+                }
+
+                var promises = [];
+                snapshot.forEach(function(doc) {
+                    var data = doc.data();
+                    console.log('📄 Document client:', doc.id, data);
+
+                    if (data.role === 'admin') {
+                        console.log('⏭️ Ignoré (admin):', doc.id);
+                        return;
+                    }
+                    
+                    allClients.push({ id: doc.id, ...data });
+                    
+                    var promise = db.collection('clients').doc(doc.id).collection('demandes').get()
+                        .then(function(ds) {
+                            console.log('📋 Demandes pour ' + doc.id + ':', ds.size);
+                            ds.forEach(function(d) {
+                                allDemandes.push({ id: d.id, clientId: doc.id, ...d.data() });
+                            });
+                        })
+                        .catch(function(error) {
+                            console.error('❌ Erreur chargement demandes:', error);
+                        });
+                    promises.push(promise);
+                });
+                return Promise.all(promises);
+            })
+            .then(function() {
+                console.log('✅ Clients chargés:', allClients.length);
+                console.log('✅ Demandes chargées:', allDemandes.length);
+                updateStats();
+                renderTable();
+                if (allClients.length === 0) {
+                    showToast('Aucun client trouvé', 'info');
+                } else {
+                    showToast(allClients.length + ' client(s) chargé(s)', 'success');
+                }
+            })
+            .catch(function(error) {
+                console.error('❌ Erreur chargement clients:', error);
+                showToast('Erreur de chargement des données: ' + error.message, 'error');
+            });
+    }
+
+    function updateStats() {
+        var total = allClients.length;
+        var particuliers = allClients.filter(function(c) { return c.typeClient === 'particulier'; }).length;
+        var entreprises = allClients.filter(function(c) { return c.typeClient === 'entreprise'; }).length;
+
+        document.getElementById('statTotal').textContent = total;
+        document.getElementById('statParticuliers').textContent = particuliers;
+        document.getElementById('statEntreprises').textContent = entreprises;
+        document.getElementById('statDemandes').textContent = allDemandes.length;
+        document.getElementById('clientsCount').textContent = total + ' client(s)';
+    }
+
+    function renderTable(filtered) {
+        var data = filtered || allClients;
+        var tbody = document.getElementById('clientsTable');
+
+        if (data.length === 0) {
+            tbody.innerHTML = '<tr><td colspan="7" class="text-center text-muted py-4"><i class="bi bi-inbox fs-1 d-block"></i><p class="mt-2">Aucun client trouvé</p></td></tr>';
+            return;
+        }
+
+        tbody.innerHTML = data.map(function(c, index) {
+            var initial = (c.nom || 'C').charAt(0).toUpperCase();
+            var colors = ['', 'green', 'purple', 'orange', 'red'];
+            var colorClass = colors[index % colors.length + 1] || '';
+            var nbDemandes = allDemandes.filter(function(d) { return d.clientId === c.id; }).length;
+            
+            return '<tr>' +
+                '<td><div class="d-flex align-items-center gap-2"><div class="client-avatar ' + colorClass + '">' + initial + '</div><strong>' + escapeHtml(c.nom || 'Inconnu') + '</strong></div></td>' +
+                '<td>' + escapeHtml(c.email || '-') + '</td>' +
+                '<td>' + escapeHtml(c.téléphone || '-') + '</td>' +
+                '<td><span class="badge bg-' + (c.typeClient === 'entreprise' ? 'info' : 'primary') + '">' + (c.typeClient === 'entreprise' ? 'Entreprise' : 'Particulier') + '</span></td>' +
+                '<td>' + formatDate(c.dateInscription) + '</td>' +
+                '<td><span class="badge bg-secondary">' + nbDemandes + '</span></td>' +
+                '<td>' +
+                    '<button class="btn btn-sm btn-outline-primary btn-action" onclick="showClient(\'' + c.id + '\')" title="Voir détails"><i class="bi bi-eye"></i></button>' +
+                    '<button class="btn btn-sm btn-outline-secondary btn-action" onclick="editClient(\'' + c.id + '\')" title="Modifier"><i class="bi bi-pencil"></i></button>' +
+                    '<button class="btn btn-sm btn-outline-danger btn-action" onclick="deleteClient(\'' + c.id + '\')" title="Supprimer"><i class="bi bi-trash"></i></button>' +
+                '</td>' +
+            '</tr>';
+        }).join('');
+    }
+
+    function filterClients() {
+        var s = document.getElementById('searchClients').value.toLowerCase();
+        var t = document.getElementById('filterType').value;
+        renderTable(allClients.filter(function(c) {
+            return ((c.nom && c.nom.toLowerCase().includes(s)) || (c.email && c.email.toLowerCase().includes(s))) &&
+                (t === 'tous' || c.typeClient === t);
+        }));
+    }
+
+    function showClient(id) {
+        var c = allClients.find(function(client) { return client.id === id; });
+        if (!c) {
+            showToast('Client introuvable', 'error');
+            return;
+        }
+        
+        var nbDemandes = allDemandes.filter(function(d) { return d.clientId === c.id; }).length;
+        
+        document.getElementById('clientDetails').innerHTML = 
+            '<div class="row">' +
+                '<div class="col-md-6">' +
+                    '<p><strong><i class="bi bi-person"></i> Nom :</strong> ' + escapeHtml(c.nom || 'Inconnu') + '</p>' +
+                    '<p><strong><i class="bi bi-envelope"></i> Email :</strong> ' + escapeHtml(c.email || '-') + '</p>' +
+                    '<p><strong><i class="bi bi-phone"></i> Téléphone :</strong> ' + escapeHtml(c.téléphone || '-') + '</p>' +
+                '</div>' +
+                '<div class="col-md-6">' +
+                    '<p><strong><i class="bi bi-building"></i> Type :</strong> <span class="badge bg-' + (c.typeClient === 'entreprise' ? 'info' : 'primary') + '">' + (c.typeClient === 'entreprise' ? 'Entreprise' : 'Particulier') + '</span></p>' +
+                    '<p><strong><i class="bi bi-geo-alt"></i> Adresse :</strong> ' + escapeHtml(c.adresse || '-') + '</p>' +
+                    '<p><strong><i class="bi bi-calendar"></i> Inscription :</strong> ' + formatDate(c.dateInscription) + '</p>' +
+                    '<p><strong><i class="bi bi-list-check"></i> Demandes :</strong> ' + nbDemandes + '</p>' +
+                '</div>' +
+            '</div>' +
+            (nbDemandes > 0 ? 
+                '<hr><h6><i class="bi bi-list-ul"></i> Demandes du client</h6><div class="list-group">' +
+                allDemandes.filter(function(d) { return d.clientId === c.id; }).map(function(d) {
+                    return '<div class="list-group-item d-flex justify-content-between align-items-center">' +
+                        '<div><strong>' + escapeHtml(d.service) + '</strong><span class="badge bg-' + statusColor(d.statut) + ' ms-2">' + statusLabel(d.statut) + '</span><small class="text-muted d-block">' + formatDate(d.date) + '</small></div>' +
+                        '<span class="text-muted small">' + escapeHtml(d.id) + '</span>' +
+                    '</div>';
+                }).join('') +
+                '</div>' 
+            : '<p class="text-muted">Aucune demande pour ce client.</p>'
+        );
+        
+        document.getElementById('clientModal').classList.add('active');
+    }
+
+    function showCreateClient() {
+        document.getElementById('createClientModal').classList.add('active');
+    }
+
+    function closeModal() {
+        document.getElementById('clientModal').classList.remove('active');
+    }
+
+    function closeCreateModal() {
+        document.getElementById('createClientModal').classList.remove('active');
+        document.getElementById('createClientForm').reset();
+    }
+
+    document.getElementById('clientModal').addEventListener('click', function(e) {
+        if (e.target === this) closeModal();
+    });
+
+    document.getElementById('createClientModal').addEventListener('click', function(e) {
+        if (e.target === this) closeCreateModal();
+    });
+
+    document.getElementById('createClientForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+        
+        var nom = document.getElementById('cNom').value.trim();
+        var email = document.getElementById('cEmail').value.trim();
+        var téléphone = document.getElementById('cTéléphone').value.trim();
+        var typeClient = document.getElementById('cType').value;
+        var adresse = document.getElementById('cAdresse').value.trim();
+        var password = document.getElementById('cPassword').value;
+        var btn = e.target.querySelector('button[type="submit"]');
+        
+        if (password.length < 6) {
+            showToast('Le mot de passe doit contenir au moins 6 caractères', 'error');
+            return;
+        }
+
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Création...';
+        }
+
+        auth.createUserWithEmailAndPassword(email, password)
+            .then(function(userCredential) {
+                var uid = userCredential.user.uid;
+                return db.collection('clients').doc(uid).set({
+                    nom: nom,
+                    email: email,
+                    téléphone: téléphone,
+                    typeClient: typeClient,
+                    adresse: adresse,
+                    dateInscription: firebase.firestore.FieldValue.serverTimestamp(),
+                    statut: 'actif',
+                    uid: uid
+                });
+            })
+            .then(function() {
+                showToast('Client créé avec succès', 'success');
+                closeCreateModal();
+                loadAll();
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-check"></i> Créer le client';
+                }
+            })
+            .catch(function(error) {
+                if (error.code === 'auth/email-already-in-use') {
+                    showToast('Cet email est déjà utilisé par un autre client', 'error');
+                } else {
+                    showToast('Erreur : ' + error.message, 'error');
+                }
+                if (btn) {
+                    btn.disabled = false;
+                    btn.innerHTML = '<i class="bi bi-check"></i> Créer le client';
+                }
+            });
+    });
+
+    function editClient(id) {
+        var c = allClients.find(function(client) { return client.id === id; });
+        if (!c) return;
+        
+        document.getElementById('cNom').value = c.nom || '';
+        document.getElementById('cEmail').value = c.email || '';
+        document.getElementById('cTéléphone').value = c.téléphone || '';
+        document.getElementById('cType').value = c.typeClient || 'particulier';
+        document.getElementById('cAdresse').value = c.adresse || '';
+        document.getElementById('cPassword').placeholder = 'Laissez vide pour conserver';
+        document.getElementById('cPassword').required = false;
+        
+        var form = document.getElementById('createClientForm');
+        form.onsubmit = function(e) {
+            e.preventDefault();
+            
+            var updates = {
+                nom: document.getElementById('cNom').value.trim(),
+                téléphone: document.getElementById('cTéléphone').value.trim(),
+                typeClient: document.getElementById('cType').value,
+                adresse: document.getElementById('cAdresse').value.trim()
+            };
+            
+            if (document.getElementById('cPassword').value.trim()) {
+                showToast('La modification du mot de passe nécessite une Cloud Function', 'info');
+            }
+            
+            db.collection('clients').doc(id).update(updates)
+                .then(function() {
+                    showToast('Client mis à jour avec succès', 'success');
+                    closeCreateModal();
+                    loadAll();
+                })
+                .catch(function(error) {
+                    showToast('Erreur : ' + error.message, 'error');
+                });
+        };
+        
+        document.getElementById('createClientModal').classList.add('active');
+    }
+
+    function deleteClient(id) {
+        var c = allClients.find(function(client) { return client.id === id; });
+        if (!c) {
+            showToast('Client introuvable', 'error');
+            return;
+        }
+        
+        var nbDemandes = allDemandes.filter(function(d) { return d.clientId === id; }).length;
+        if (!confirm('Supprimer le client "' + (c.nom || 'Inconnu') + '" et ses ' + nbDemandes + ' demande(s) ?')) return;
+        
+        db.collection('clients').doc(id).collection('demandes').get()
+            .then(function(ds) {
+                var promises = [];
+                ds.forEach(function(d) {
+                    promises.push(db.collection('clients').doc(id).collection('demandes').doc(d.id).delete());
+                });
+                return Promise.all(promises);
+            })
+            .then(function() {
+                return db.collection('clients').doc(id).delete();
+            })
+            .then(function() {
+                showToast('Client supprimé avec succès', 'info');
+                loadAll();
+            })
+            .catch(function(error) {
+                console.error('❌ Erreur suppression client:', error);
+                showToast('Erreur : ' + error.message, 'error');
+            });
+    }
+
+    function exportCSV() {
+        if (allClients.length === 0) {
+            showToast('Aucun client à exporter', 'error');
+            return;
+        }
+        
+        var headers = ['Nom', 'Email', 'Téléphone', 'Type', 'Adresse', 'Inscription', 'Demandes'];
+        var rows = allClients.map(function(c) {
+            return [
+                c.nom || '',
+                c.email || '',
+                c.téléphone || '',
+                c.typeClient || 'particulier',
+                c.adresse || '',
+                formatDate(c.dateInscription),
+                allDemandes.filter(function(d) { return d.clientId === c.id; }).length
+            ];
+        });
+        
+        var csv = [headers.join(','), ...rows.map(function(r) { return r.join(','); })].join('\n');
+        var blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+        var link = document.createElement('a');
+        link.href = URL.createObjectURL(blob);
+        link.download = 'clients_' + new Date().toISOString().split('T')[0] + '.csv';
+        link.click();
+        URL.revokeObjectURL(link.href);
+        showToast('Export CSV effectué', 'success');
+    }
+
+    var realtimeListenersActive = false;
+
+    function listenRealtime() {
+        if (realtimeListenersActive) return;
+        realtimeListenersActive = true;
+
+        db.collection('clients').onSnapshot(function() {
+            loadAll();
+        }, function(error) {
+            console.error('Erreur écoute clients:', error);
+        });
+    }
+</script>
+
+</body>
+</html>

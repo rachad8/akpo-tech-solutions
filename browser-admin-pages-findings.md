@@ -1,9 +1,11 @@
 # Contrôle navigateur des pages admin
 
-Le tableau de bord charge correctement après publication de `a8bd0d7`.
+Le dashboard corrigé charge correctement. Les sections internes Demandes, Clients, Messages, Factures, Commentaires et Statistiques fonctionnent.
 
-Demandes, Clients, Messages, Factures, Commentaires et Statistiques fonctionnent dans la session admin.
+La page Paramètres directe fonctionne et affiche les services.
 
-Le lien Paramètres du dashboard était cassé : il ne naviguait pas. Le correctif local ajoute `href="settings.html"`; cette correction doit être republiée avant vérification finale.
+La page Demandes directe fonctionne avec ses filtres et statistiques.
 
-La page Paramètres publiée est accessible directement et charge le compte admin, les informations du site, les services proposés et les actions de configuration. Le module Services affiche toutefois « Chargement des services... » dans le rendu observé et devra être vérifié dans le code.
+La page Messages directe fonctionne et affiche les compteurs et l’état vide.
+
+La page Clients directe s’ouvre et affiche les clients dans le texte extrait, mais le rendu visuel montre encore « Chargement des clients... » et des compteurs à 0 alors que le texte contient 5 clients chargés. Cela indique probablement un état d’affichage pris pendant la mise à jour asynchrone, à recontrôler après attente.

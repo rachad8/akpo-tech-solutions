@@ -13,18 +13,29 @@ const FacturationAPI = {
     async payerFacture(facture) {
         if (!facture?.id) throw new Error('Facture invalide.');
         if (facture.statut === 'payee') throw new Error('Cette facture est déjà payée.');
-        if (!window.firebase?.functions) throw new Error('Firebase Functions n’est pas disponible.');
         await this.loadFedaPayCheckout();
         if (!FEDAPAY_CONFIG.publicKey || FEDAPAY_CONFIG.publicKey.startsWith('VOTRE_')) throw new Error('La clé publique FedaPay n’est pas encore configurée dans assets/js/payment.js.');
-        const result = await firebase.functions().httpsCallable('createFedaPayTransaction')({ factureId: facture.id });
-        const payment = result.data;
+        const payment = await this.callPaymentApi('/api/fedapay/create-transaction', { factureId: facture.id });
         if (!payment?.success || !payment.transactionId) throw new Error('Impossible de créer la transaction FedaPay.');
         const widget = FedaPay.init({ public_key: FEDAPAY_CONFIG.publicKey, environment: FEDAPAY_CONFIG.environment, locale: 'fr', transaction: { id: payment.transactionId, amount: payment.amount, description: 'Paiement facture ' + facture.id }, customer: { email: facture.clientEmail || '', lastname: facture.clientNom || 'Client' }, onComplete: async (reason, transaction) => {
             if (reason !== FedaPay.CHECKOUT_COMPLETED) return;
-            try { const verification = await firebase.functions().httpsCallable('verifyFedaPayPayment')({ factureId: facture.id, transactionId: transaction?.id || payment.transactionId }); if (verification.data?.paid) { alert('Paiement confirmé. Votre facture est maintenant payée.'); window.location.reload(); } else alert('Le paiement n’a pas encore été confirmé. Vérifiez votre facture dans quelques instants.'); }
+            try { const verification = await this.callPaymentApi('/api/fedapay/verify-transaction', { factureId: facture.id, transactionId: transaction?.id || payment.transactionId }); if (verification?.paid) { alert('Paiement confirmé. Votre facture est maintenant payée.'); window.location.reload(); } else alert('Le paiement n’a pas encore été confirmé. Vérifiez votre facture dans quelques instants.'); }
             catch (error) { console.error('Erreur de vérification FedaPay:', error); alert('La confirmation automatique du paiement a échoué. Actualisez la page ou contactez le support.'); }
         }});
         widget.open(); return payment;
+    },
+    async callPaymentApi(path, payload) {
+        const user = firebase.auth().currentUser;
+        if (!user) throw new Error('Vous devez être connecté pour payer cette facture.');
+        const token = await user.getIdToken();
+        const response = await fetch('https://akpo-tech-solutions.vercel.app' + path, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json', Authorization: 'Bearer ' + token },
+            body: JSON.stringify(payload)
+        });
+        const result = await response.json().catch(() => ({}));
+        if (!response.ok) throw new Error(result.error || 'Le service de paiement est indisponible.');
+        return result;
     },
     async payerFactureById(factureId) {
         const snap = await db.collection('factures').doc(factureId).get();

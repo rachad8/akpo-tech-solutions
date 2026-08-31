@@ -41,7 +41,7 @@ module.exports = async function handler(req, res) {
     });
 
     await ref.update({
-      fedaPayTransactionId: transaction.id,
+      fedaPayTransactionId: String(transaction.id),
       fedaPayReference: transaction.reference || null,
       fedaPayMerchantReference: merchantReference,
       paiementMisAJourLe: require('../firebase-admin').getFirebaseAdmin().firestore.FieldValue.serverTimestamp()

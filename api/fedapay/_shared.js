@@ -81,7 +81,23 @@ async function fedapayRequest(path, options = {}) {
     error.statusCode = response.status >= 500 ? 502 : 400;
     throw error;
   }
-  return payload?.transaction || payload;
+  const transaction = payload?.transaction
+    || payload?.data
+    || payload?.['v1/transaction']
+    || payload?.['v1_transaction']
+    || payload;
+
+  if (!transaction || transaction.id === undefined || transaction.id === null) {
+    console.error('Réponse FedaPay sans identifiant de transaction:', {
+      keys: Object.keys(payload || {}),
+      nestedKeys: transaction && typeof transaction === 'object' ? Object.keys(transaction) : []
+    });
+    const error = new Error('FedaPay a créé une réponse sans identifiant de transaction. Consultez les journaux Vercel.');
+    error.statusCode = 502;
+    throw error;
+  }
+
+  return transaction;
 }
 
 module.exports = {

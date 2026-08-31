@@ -26,13 +26,12 @@
       <p>Création sécurisée du compte administrateur</p>
     </div>
     <div class="auth-message" id="authMessage"></div>
-    <form id="registerForm">
+    <form id="registerForm" style="display:none;">
       <div class="form-group"><label class="form-label" for="registerNom">Nom complet <span class="text-danger">*</span></label><input type="text" id="registerNom" class="form-control" placeholder="Votre nom complet" required></div>
       <div class="form-group"><label class="form-label" for="registerEmail">Email <span class="text-danger">*</span></label><input type="email" id="registerEmail" class="form-control" placeholder="admin@exemple.com" required></div>
       <div class="form-group"><label class="form-label" for="registerTéléphone">Téléphone</label><input type="tel" id="registerTéléphone" class="form-control" placeholder="Votre numéro"></div>
       <div class="form-group"><label class="form-label" for="registerPassword">Mot de passe <span class="text-danger">*</span></label><div class="input-icon-wrapper"><input type="password" id="registerPassword" class="form-control" placeholder="Min. 6 caractères" minlength="6" required><button type="button" class="password-toggle" onclick="togglePass('registerPassword', this)"><i class="bi bi-eye"></i></button></div></div>
       <div class="form-group"><label class="form-label" for="registerPasswordConfirm">Confirmer le mot de passe <span class="text-danger">*</span></label><div class="input-icon-wrapper"><input type="password" id="registerPasswordConfirm" class="form-control" placeholder="Confirmez" minlength="6" required><button type="button" class="password-toggle" onclick="togglePass('registerPasswordConfirm', this)"><i class="bi bi-eye"></i></button></div></div>
-      <div class="form-group"><label class="form-label" for="registerSecret">Code secret administrateur <span class="text-danger">*</span></label><input type="password" id="registerSecret" class="form-control" placeholder="Code fourni par le responsable" required autocomplete="off"></div>
       <button type="submit" class="auth-submit" id="registerBtn"><i class="bi bi-person-plus"></i> Créer le compte admin</button>
     </form>
     <div class="auth-footer"><a href="admin-login.html"><i class="bi bi-arrow-left"></i> Retour à la connexion admin</a><br><a href="../index.html" class="mt-2 d-inline-block">Retour au site</a></div>
@@ -46,6 +45,10 @@
 <script>
 var authMessage = document.getElementById('authMessage');
 var registerBtn = document.getElementById('registerBtn');
+
+AkpoGuard.requireAdmin(function () {
+    document.getElementById('registerForm').style.display = 'block';
+}, { loginPath: 'admin-login.html', deniedPath: 'admin-login.html' });
 
 function togglePass(id, btn) {
     var input = document.getElementById(id);
@@ -71,7 +74,7 @@ function hideMessage() {
 
 function errorMessage(error) {
     var code = error && error.code;
-    if (code === 'functions/permission-denied') return '❌ Code secret administrateur invalide.';
+    if (code === 'functions/permission-denied') return '❌ Action réservée aux administrateurs connectés.';
     if (code === 'functions/invalid-argument') return '❌ Vérifiez les informations saisies.';
     if (code === 'functions/failed-precondition') return '❌ Le service admin Firebase n’est pas configuré.';
     if (code === 'auth/email-already-exists' || code === 'functions/already-exists') return '❌ Cet email est déjà utilisé.';
@@ -90,9 +93,8 @@ document.getElementById('registerForm').addEventListener('submit', function (eve
     var phone = document.getElementById('registerTéléphone').value.trim();
     var password = document.getElementById('registerPassword').value;
     var passwordConfirm = document.getElementById('registerPasswordConfirm').value;
-    var secretCode = document.getElementById('registerSecret').value;
 
-    if (!fullName || !email || !password || !secretCode) {
+    if (!fullName || !email || !password) {
         showMessage('❌ Veuillez remplir tous les champs obligatoires.', 'error');
         return;
     }
@@ -110,7 +112,7 @@ document.getElementById('registerForm').addEventListener('submit', function (eve
 
     AkpoGuard.ready.then(function () {
         var registerAdmin = firebase.functions().httpsCallable('registerAdmin');
-        return registerAdmin({ email: email, password: password, fullName: fullName, phone: phone, secretCode: secretCode });
+        return registerAdmin({ email: email, password: password, fullName: fullName, phone: phone });
     }).then(function () {
         showMessage('✅ Compte administrateur créé. Vous pouvez maintenant vous connecter.', 'success');
         setTimeout(function () { window.location.href = 'admin-login.html'; }, 1500);

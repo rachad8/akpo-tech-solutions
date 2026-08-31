@@ -23,14 +23,6 @@ const transporter = nodemailer.createTransport({
         pass: EMAIL_PASSWORD
     }
 });
-
-const ADMIN_SECRET = functions.config().admin.secret;
-
-if (!ADMIN_SECRET) {
-    console.error('❌ ADMIN_SECRET non configuré');
-    throw new Error('Configuration admin manquante. Exécutez : firebase functions:config:set admin.secret="VOTRE_CODE"');
-}
-
 exports.notifyNewDemande = functions.firestore
     .document('clients/{clientId}/demandes/{demandeId}')
     .onCreate(async (snap, context) => {
@@ -261,15 +253,24 @@ exports.deleteClientAccount = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('internal', error.message);
     }
 });
-
 exports.registerAdmin = functions.https.onCall(async (data, context) => {
-    const { email, password, fullName, phone, secretCode } = data;
+    if (!context.auth) {
+        throw new functions.https.HttpsError('unauthenticated', 'Vous devez être connecté comme administrateur');
+    }
 
-    if (secretCode !== ADMIN_SECRET) {
-        throw new functions.https.HttpsError(
-            'permission-denied',
-            'Code secret invalide'
-        );
+    const requesterProfile = await db.collection('clients').doc(context.auth.uid).get();
+    const requesterIsAdmin = context.auth.token.admin === true ||
+        (requesterProfile.exists && requesterProfile.data().role === 'admin');
+    if (!requesterIsAdmin) {
+        throw new functions.https.HttpsError('permission-denied', 'Action réservée aux administrateurs');
+    }
+
+    const { email, password, fullName, phone } = data || {};
+    if (!email || !password || !fullName) {
+        throw new functions.https.HttpsError('invalid-argument', 'Email, mot de passe et nom complet sont obligatoires');
+    }
+    if (password.length < 6) {
+        throw new functions.https.HttpsError('invalid-argument', 'Le mot de passe doit contenir au moins 6 caractères');
     }
 
     try {

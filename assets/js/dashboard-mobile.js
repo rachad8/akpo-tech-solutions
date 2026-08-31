@@ -32,7 +32,7 @@
         ['index.html', 'Accueil', 'bi-house'],
         ['invoices.html', 'Factures', 'bi-receipt'],
         ['payments.html', 'Paiements', 'bi-credit-card'],
-        ['support.html', 'Support', 'bi-headset']
+        ['profile.html', 'Profil', 'bi-person']
     ];
     items.forEach(([href, label, icon]) => {
         const link = document.createElement('a');

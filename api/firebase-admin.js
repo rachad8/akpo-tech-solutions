@@ -1,20 +1,25 @@
 const admin = require("firebase-admin");
 
-if (!admin.apps.length) {
+function getFirebaseAdmin() {
+  if (admin.apps.length) return admin;
+
+  const projectId = process.env.FIREBASE_PROJECT_ID;
+  const clientEmail = process.env.FIREBASE_CLIENT_EMAIL;
+  const privateKey = process.env.FIREBASE_PRIVATE_KEY;
+
+  if (!projectId || !clientEmail || !privateKey) {
+    throw new Error("Configuration Firebase manquante sur Vercel. Vérifiez FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL et FIREBASE_PRIVATE_KEY dans Environment Variables.");
+  }
+
   admin.initializeApp({
     credential: admin.credential.cert({
-      projectId: process.env.FIREBASE_PROJECT_ID,
-      clientEmail: process.env.FIREBASE_CLIENT_EMAIL,
-      privateKey: process.env.FIREBASE_PRIVATE_KEY.replace(/\\n/g, "\n"),
+      projectId,
+      clientEmail,
+      privateKey: privateKey.replace(/\\n/g, "\n"),
     }),
   });
+
+  return admin;
 }
 
-const db = admin.firestore();
-const auth = admin.auth();
-
-module.exports = {
-  admin,
-  db,
-  auth,
-};
+module.exports = { getFirebaseAdmin };

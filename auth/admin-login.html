@@ -129,36 +129,55 @@
     </div>
 
     <script>
-
-        var ADMIN_EMAIL = "contactstechsolutionsakpo@gmail.com";
-
         var sessionCheck = document.getElementById('sessionCheck');
         var authContent = document.getElementById('authContent');
         var authMessage = document.getElementById('authMessage');
         var loginBtn = document.getElementById('loginBtn');
 
-        sessionCheck.classList.add('active');
-
-        auth.onAuthStateChanged(function(user) {
+        function showLogin() {
             sessionCheck.classList.remove('active');
+            authContent.style.display = 'block';
+        }
 
-            if (user) {
-                db.collection('clients').doc(user.uid).get()
-                    .then(function(doc) {
-                        if (doc.exists && doc.data().role === 'admin') {
-                            window.location.href = '../admin/index.html';
-                        } else {
-                            auth.signOut();
-                            authContent.style.display = 'block';
+        function resetLoginButton() {
+            loginBtn.disabled = false;
+            loginBtn.innerHTML = '<i class="bi bi-shield-lock"></i> Accéder à l\'administration';
+        }
+
+        function checkAdminAndRedirect(user) {
+            return AkpoGuard.getProfile(user).then(function(profile) {
+                return AkpoGuard.isAdmin(user, profile).then(function(isAdmin) {
+                    if (!isAdmin) {
+                        return auth.signOut().then(function() {
+                            showLogin();
                             showMessage('❌ Ce compte n\'est pas administrateur.', 'error');
-                        }
-                    })
-                    .catch(function() {
-                        authContent.style.display = 'block';
+                        });
+                    }
+                    window.location.href = '../admin/index.html';
+                });
+            });
+        }
+
+        sessionCheck.classList.add('active');
+        AkpoGuard.ready.then(function(services) {
+            window.auth = services.auth;
+            services.auth.onAuthStateChanged(function(user) {
+                if (!user) {
+                    showLogin();
+                    return;
+                }
+                checkAdminAndRedirect(user).catch(function(error) {
+                    console.error('[AKPO] Impossible de vérifier le profil admin.', error);
+                    services.auth.signOut().finally(function() {
+                        showLogin();
+                        showMessage('❌ Impossible de vérifier les droits administrateur. Réessayez.', 'error');
                     });
-            } else {
-                authContent.style.display = 'block';
-            }
+                });
+            });
+        }).catch(function(error) {
+            console.error('[AKPO] Firebase indisponible.', error);
+            showLogin();
+            showMessage('❌ Le service de connexion est momentanément indisponible.', 'error');
         });
 
         function togglePass(inputId, btn) {
@@ -183,6 +202,14 @@
             authMessage.style.display = 'none';
         }
 
+        function getAuthErrorMessage(error) {
+            if (error && error.code === 'auth/user-not-found') return '❌ Aucun compte trouvé avec cet email.';
+            if (error && error.code === 'auth/too-many-requests') return '❌ Trop de tentatives. Réessayez plus tard.';
+            if (error && error.code === 'auth/network-request-failed') return '❌ Erreur de connexion. Vérifiez votre internet.';
+            if (error && (error.code === 'auth/invalid-credential' || error.code === 'auth/wrong-password')) return '❌ Email ou mot de passe incorrect.';
+            return '❌ Impossible de se connecter. Vérifiez vos identifiants.';
+        }
+
         document.getElementById('loginForm').addEventListener('submit', function(e) {
             e.preventDefault();
 
@@ -199,38 +226,15 @@
             loginBtn.disabled = true;
             loginBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Connexion...';
 
-            auth.signInWithEmailAndPassword(email, password)
-                .then(function(userCredential) {
-
-                    return db.collection('clients').doc(userCredential.user.uid).get()
-                        .then(function(doc) {
-                            if (doc.exists && doc.data().role === 'admin') {
-                                window.location.href = '../admin/index.html';
-                            } else {
-                                return auth.signOut().then(function() {
-                                    showMessage('❌ Ce compte n\'est pas administrateur.', 'error');
-                                    loginBtn.disabled = false;
-                                    loginBtn.innerHTML = '<i class="bi bi-shield-lock"></i> Accéder à l\'administration';
-                                });
-                            }
-                        });
-                })
-                .catch(function(error) {
-                    console.error('❌ Erreur connexion admin:', error);
-                    var message = '❌ Email ou mot de passe incorrect.';
-                    if (error.code === 'auth/user-not-found') {
-                        message = '❌ Aucun compte trouvé avec cet email.';
-                    } else if (error.code === 'auth/too-many-requests') {
-                        message = '❌ Trop de tentatives. Réessayez plus tard.';
-                    } else if (error.code === 'auth/network-request-failed') {
-                        message = '❌ Erreur de connexion. Vérifiez votre internet.';
-                    } else {
-                        message = '❌ ' + error.message;
-                    }
-                    showMessage(message, 'error');
-                    loginBtn.disabled = false;
-                    loginBtn.innerHTML = '<i class="bi bi-shield-lock"></i> Accéder à l\'administration';
+            AkpoGuard.ready.then(function(services) {
+                return services.auth.signInWithEmailAndPassword(email, password).then(function(userCredential) {
+                    return checkAdminAndRedirect(userCredential.user);
                 });
+            }).catch(function(error) {
+                console.error('[AKPO] Erreur connexion admin:', error);
+                showMessage(getAuthErrorMessage(error), 'error');
+                resetLoginButton();
+            });
         });
     </script>
 </body>

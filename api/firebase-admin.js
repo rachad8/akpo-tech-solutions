@@ -11,13 +11,20 @@ function getFirebaseAdmin() {
     throw new Error("Configuration Firebase manquante sur Vercel. Vérifiez FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL et FIREBASE_PRIVATE_KEY dans Environment Variables.");
   }
 
-  admin.initializeApp({
-    credential: admin.credential.cert({
-      projectId,
-      clientEmail,
-      privateKey: privateKey.replace(/\\n/g, "\n"),
-    }),
-  });
+  const normalizedPrivateKey = privateKey.replace(/\\n/g, "\n").trim();
+
+  try {
+    admin.initializeApp({
+      credential: admin.credential.cert({
+        projectId: projectId.trim(),
+        clientEmail: clientEmail.trim(),
+        privateKey: normalizedPrivateKey,
+      }),
+    });
+  } catch (error) {
+    console.error("Initialisation Firebase Admin impossible :", error);
+    throw new Error("Configuration Firebase invalide sur Vercel. Vérifiez la clé privée et les identifiants du compte de service.");
+  }
 
   return admin;
 }

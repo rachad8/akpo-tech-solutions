@@ -528,3 +528,22 @@ body::selection { background: var(--color-primary-100); color: var(--ink-strong)
     .hero-home .d-flex.gap-3 { justify-content: center; }
     .hero-home .mt-4 { justify-content: center; }
 }
+
+
+/* Compatibilité cross-browser : fallbacks sûrs pour WebKit, Firefox et anciens moteurs. */
+html { -webkit-text-size-adjust: 100%; text-size-adjust: 100%; }
+img, svg, video { max-width: 100%; height: auto; }
+button, input, select, textarea { font: inherit; }
+button { -webkit-appearance: none; appearance: none; }
+.navbar, .card, .btn { -webkit-backface-visibility: hidden; backface-visibility: hidden; }
+.navbar.scrolled { -webkit-backdrop-filter: blur(14px); backdrop-filter: blur(14px); }
+@supports not (font-size: clamp(1rem, 2vw, 2rem)) {
+    .hero-home h1 { font-size: 3.5rem; }
+    .hero-home .lead { font-size: 1.1rem; }
+    .section-title { font-size: 2rem; }
+}
+@media (max-width: 767px) {
+    @supports not (font-size: clamp(1rem, 2vw, 2rem)) {
+        .hero-home h1 { font-size: 2.5rem; }
+    }
+}

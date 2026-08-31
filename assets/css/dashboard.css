@@ -273,3 +273,73 @@
     .dashboard-header { align-items: flex-start; }
     .dashboard-stat-card { min-height: 96px; }
 }
+
+
+/* Navigation mobile client : hamburger fixe, panneau latéral et fermeture X. */
+.dashboard-mobile-toggle,
+.dashboard-mobile-close,
+.dashboard-mobile-overlay { display: none; }
+
+@media (max-width: 991px) {
+    body.menu-open { overflow: hidden; }
+    .dashboard-mobile-toggle {
+        display: inline-flex;
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        z-index: 220;
+        width: 44px;
+        height: 44px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #D8E5F3;
+        border-radius: 12px;
+        background: #fff;
+        color: #12345D;
+        box-shadow: 0 8px 20px rgba(11,31,58,.14);
+        font-size: 1.35rem;
+        cursor: pointer;
+    }
+    .dashboard-mobile-toggle:focus-visible,
+    .dashboard-mobile-close:focus-visible { outline: 3px solid #93C5FD; outline-offset: 3px; }
+    .dashboard-sidebar {
+        width: min(294px, 86vw);
+        transform: translateX(-105%);
+        transition: transform .28s ease;
+        box-shadow: 18px 0 38px rgba(4,18,39,.24);
+    }
+    .dashboard-sidebar.open { transform: translateX(0); }
+    .dashboard-mobile-close {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        position: absolute;
+        top: 16px;
+        right: 16px;
+        width: 40px;
+        height: 40px;
+        border: 1px solid rgba(219,234,254,.28);
+        border-radius: 10px;
+        background: rgba(255,255,255,.1);
+        color: #fff;
+        font-size: 1.15rem;
+        cursor: pointer;
+    }
+    .dashboard-mobile-overlay {
+        display: block;
+        position: fixed;
+        inset: 0;
+        z-index: 140;
+        border: 0;
+        background: rgba(5,17,34,.56);
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity .28s ease;
+    }
+    .dashboard-mobile-overlay.visible { opacity: 1; pointer-events: auto; }
+    .dashboard-main { position: relative; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .dashboard-sidebar, .dashboard-mobile-overlay { transition: none; }
+}

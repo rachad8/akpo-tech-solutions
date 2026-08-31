@@ -153,11 +153,15 @@
         async function loadFactures() {
             const snapshot = await db.collection('factures')
                 .where('clientId', '==', currentUser.uid)
-                .orderBy('date', 'desc')
                 .get();
 
             allFactures = [];
             snapshot.forEach(doc => allFactures.push({ id: doc.id, ...doc.data() }));
+            allFactures.sort((a, b) => {
+                const dateA = a.date && a.date.toMillis ? a.date.toMillis() : 0;
+                const dateB = b.date && b.date.toMillis ? b.date.toMillis() : 0;
+                return dateB - dateA;
+            });
 
             updateStats();
             renderTable();
@@ -234,7 +238,6 @@
         function listenRealtime() {
             db.collection('factures')
                 .where('clientId', '==', currentUser.uid)
-                .orderBy('date', 'desc')
                 .onSnapshot(async () => { await loadFactures(); });
         }
 

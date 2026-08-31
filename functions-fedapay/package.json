@@ -11,7 +11,7 @@
   "dependencies": {
     "firebase-admin": "^12.7.0",
     "firebase-functions": "^5.1.1",
-    "fedapay": "^1.4.0"
+    "fedapay": "^1.2.5"
   },
   "private": true
 }

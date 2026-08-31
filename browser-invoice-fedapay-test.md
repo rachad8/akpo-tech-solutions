@@ -1,7 +1,7 @@
 # Test facture côté client et FedaPay
 
-Le compte client de test `client.facture.test.20260831@example.com` a été créé directement dans le navigateur et redirigé vers son tableau de bord.
+Un compte client de test a été créé dans le navigateur. Une facture `FAC-2026-5025`, montant 1 FCFA, service « Test de visibilité facture », a été créée depuis l’espace admin pour ce compte.
 
-La page `client/invoices.html` s’ouvre correctement et affiche l’état vide pour ce compte. La facture `FAC-2026-6362` ne s’affiche pas, car elle est liée au client Abdoul Salami avec un autre `clientId`. Ce résultat confirme que le filtrage côté client est bien limité au compte connecté, et qu’une facture ne doit pas apparaître chez un autre client.
+Après reconnexion avec le compte client, la page `client/invoices.html` affiche réellement : 1 facture, 1 facture en attente, 1 FCFA, et le bouton « Payer ».
 
-Étape suivante : créer une facture depuis l’espace admin en sélectionnant précisément le compte client de test, puis revenir dans ce compte pour confirmer son affichage et tester le bouton FedaPay sans effectuer de paiement réel.
+Le clic sur « Payer » a ouvert une fenêtre `about:blank` sans afficher de widget FedaPay visible. Le paiement n’a pas été effectué. Cette étape nécessite une vérification de la configuration FedaPay, de la Cloud Function de création de transaction et des erreurs console.

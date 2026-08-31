@@ -104,7 +104,7 @@
                 return;
             }
             alert('Accès réservé à l’administration.');
-            global.location.href = settings.deniedPath || '../auth/login.html';
+            global.location.href = settings.deniedPath || '../auth/admin-login.html';
         }, settings);
     };
 

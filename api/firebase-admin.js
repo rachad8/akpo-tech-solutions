@@ -11,13 +11,14 @@ function getFirebaseAdmin() {
     throw new Error("Configuration Firebase manquante sur Vercel. Vérifiez FIREBASE_PROJECT_ID, FIREBASE_CLIENT_EMAIL et FIREBASE_PRIVATE_KEY dans Environment Variables.");
   }
 
-  const normalizedPrivateKey = privateKey.replace(/\\n/g, "\n").trim();
+  const stripOptionalQuotes = (value) => value.trim().replace(/^['"]|['"]$/g, "");
+  const normalizedPrivateKey = stripOptionalQuotes(privateKey).replace(/\\n/g, "\n").trim();
 
   try {
     admin.initializeApp({
       credential: admin.credential.cert({
-        projectId: projectId.trim(),
-        clientEmail: clientEmail.trim(),
+        projectId: stripOptionalQuotes(projectId),
+        clientEmail: stripOptionalQuotes(clientEmail),
         privateKey: normalizedPrivateKey,
       }),
     });

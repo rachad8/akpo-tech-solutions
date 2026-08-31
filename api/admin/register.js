@@ -61,8 +61,8 @@ module.exports = async (req, res) => {
     if (error.code === "auth/invalid-email") {
       return res.status(400).json({ success: false, message: "Adresse email invalide." });
     }
-    if (error.message && error.message.indexOf("Configuration Firebase manquante") === 0) {
-      return res.status(503).json({ success: false, message: "Le service administrateur n'est pas configuré sur le serveur." });
+    if (error.message && (error.message.indexOf("Configuration Firebase manquante") === 0 || error.message.indexOf("Configuration Firebase invalide") === 0)) {
+      return res.status(503).json({ success: false, message: "Le service administrateur n'est pas correctement configuré sur le serveur." });
     }
 
     return res.status(500).json({ success: false, message: "Erreur lors de la création du compte administrateur." });

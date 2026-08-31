@@ -1,11 +1,9 @@
 # Contrôle navigateur des pages admin
 
-Le dashboard corrigé charge correctement. Les sections internes Demandes, Clients, Messages, Factures, Commentaires et Statistiques fonctionnent.
+Le dashboard publié fonctionne et ses liens réels redirigent correctement.
 
-La page Paramètres directe fonctionne et affiche les services.
+Les pages testées Demandes, Clients, Messages, Factures, Commentaires, Statistiques et Paramètres fonctionnent.
 
-La page Demandes directe fonctionne avec ses filtres et statistiques.
+La page Factures directe fonctionne.
 
-La page Messages directe fonctionne et affiche les compteurs et l’état vide.
-
-La page Clients directe s’ouvre et affiche les clients dans le texte extrait, mais le rendu visuel montre encore « Chargement des clients... » et des compteurs à 0 alors que le texte contient 5 clients chargés. Cela indique probablement un état d’affichage pris pendant la mise à jour asynchrone, à recontrôler après attente.
+La page Paiements directe redirige vers `auth/admin-login.html`. La cause probable est son contrôle local qui vérifie uniquement `token.claims.admin`, alors que les comptes admin créés publiquement ont `role: 'admin'` dans Firestore mais ne peuvent pas obtenir de custom claim côté client. Cette page doit utiliser le même garde admin que les autres pages.

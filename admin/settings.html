@@ -304,22 +304,34 @@
         listenRealtime();
     });
 
+    const defaultServices = [
+        'Installation Windows 11',
+        'Installation Windows 10',
+        'Dépannage informatique',
+        'Suppression virus',
+        'Installation WiFi / Réseau',
+        'Maintenance préventive',
+        'Récupération données',
+        'Installation imprimante'
+    ];
+
     async function loadServices() {
-        const doc = await db.collection('settings').doc('services').get();
-        if (doc.exists) {
-            allServices = doc.data().list || [];
-        } else {
-            allServices = [
-                'Installation Windows 11',
-                'Installation Windows 10',
-                'Dépannage informatique',
-                'Suppression virus',
-                'Installation WiFi / Réseau',
-                'Maintenance préventive',
-                'Récupération données',
-                'Installation imprimante'
-            ];
-            await db.collection('settings').doc('services').set({ list: allServices });
+        try {
+            const doc = await db.collection('settings').doc('services').get();
+            if (doc.exists) {
+                allServices = doc.data().list || [];
+            } else {
+                allServices = defaultServices.slice();
+                try {
+                    await db.collection('settings').doc('services').set({ list: allServices });
+                } catch (writeError) {
+                    console.warn('[AKPO] Services par défaut non enregistrés :', writeError);
+                }
+            }
+        } catch (readError) {
+            console.warn('[AKPO] Services indisponibles, affichage des valeurs par défaut :', readError);
+            allServices = defaultServices.slice();
+            showToast('Services chargés localement. Vérifiez les règles Firestore pour enregistrer les modifications.', 'error');
         }
         renderServices();
     }

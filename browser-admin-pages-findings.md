@@ -1,7 +1,9 @@
 # Contrôle navigateur des pages admin
 
-La session Firebase est active avec l’utilisateur admin de test. Le profil `clients/{uid}` existe avec `role: 'admin'` et `isAdmin: true`.
+Le tableau de bord charge correctement après publication de `a8bd0d7`.
 
-Les requêtes exactes du chargement principal réussissent dans la console du navigateur : `clients.get()` renvoie 11 documents, `contacts.orderBy('date')`, `factures.orderBy('date')`, `commentaires.orderBy('date')` et les sous-collections `clients/{uid}/demandes.orderBy('date')` réussissent.
+Demandes, Clients, Messages, Factures, Commentaires et Statistiques fonctionnent dans la session admin.
 
-Le dashboard publié affiche toutefois encore `Missing or insufficient permissions`. Le code active aussi une écoute temps réel via `db.collectionGroup('demandes').orderBy('date', 'desc')`. Les règles actuelles ne contiennent pas de règle explicite adaptée aux requêtes collection group, ce qui est la cause probable à corriger.
+Le lien Paramètres du dashboard était cassé : il ne naviguait pas. Le correctif local ajoute `href="settings.html"`; cette correction doit être republiée avant vérification finale.
+
+La page Paramètres publiée est accessible directement et charge le compte admin, les informations du site, les services proposés et les actions de configuration. Le module Services affiche toutefois « Chargement des services... » dans le rendu observé et devra être vérifié dans le code.

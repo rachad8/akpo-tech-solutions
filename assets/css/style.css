@@ -322,3 +322,96 @@ textarea.form-control {
     .hero-home { min-height: 680px; }
     .hero-home .row { min-height: 580px; }
 }
+
+
+/* ==========================================================================
+   AKPO TECH — Refonte UI/UX globale
+   ========================================================================== */
+:root {
+    --surface-quiet: #F4F7FB;
+    --surface-raised: #FFFFFF;
+    --ink-strong: #10233F;
+    --ink-soft: #52657D;
+    --line-soft: #DCE6F2;
+    --focus-ring: 0 0 0 4px rgba(37, 99, 235, .2);
+    --ease-out: cubic-bezier(.22, .75, .25, 1);
+}
+
+html { scroll-behavior: smooth; }
+body {
+    color: var(--ink-strong);
+    background: var(--bg-white);
+    text-rendering: optimizeLegibility;
+    -webkit-font-smoothing: antialiased;
+}
+body::selection { background: var(--color-primary-100); color: var(--ink-strong); }
+
+:where(a, button, input, select, textarea):focus-visible {
+    outline: 3px solid var(--color-primary-light);
+    outline-offset: 3px;
+    box-shadow: var(--focus-ring);
+}
+
+.navbar {
+    background: rgba(252, 253, 254, .94);
+    border-bottom: 1px solid transparent;
+    backdrop-filter: blur(14px);
+    transition: background var(--transition-base), border-color var(--transition-base), box-shadow var(--transition-base);
+}
+.navbar.scrolled { border-color: var(--line-soft); box-shadow: 0 8px 28px rgba(16, 35, 63, .08); }
+.navbar .nav-link { color: var(--ink-soft); font-weight: 600; letter-spacing: .01em; }
+.navbar .nav-link:hover, .navbar .nav-link.active { color: var(--color-primary); }
+
+.section { position: relative; }
+.section-title { color: var(--ink-strong); letter-spacing: -.025em; }
+.section-description { color: var(--ink-soft); max-width: 680px; }
+.section-tag { letter-spacing: .12em; font-size: .72rem; font-weight: 800; text-transform: uppercase; }
+
+.btn { min-height: 44px; border-radius: 10px; transition: transform var(--transition-fast), box-shadow var(--transition-base), background var(--transition-base); }
+.btn-primary { background: var(--color-primary-dark); }
+.btn-primary:hover { background: var(--color-primary); transform: translateY(-2px); box-shadow: 0 12px 24px rgba(37, 99, 235, .22); }
+.btn-secondary { border-width: 1px; }
+.card { border-radius: 14px; box-shadow: 0 1px 1px rgba(16,35,63,.02); }
+.card:hover { transform: translateY(-3px); box-shadow: 0 18px 34px rgba(16, 35, 63, .11); border-color: var(--color-primary-200); }
+
+.page-hero { min-height: 390px; }
+.page-hero::before { background: linear-gradient(90deg, rgba(7,20,38,.98), rgba(7,20,38,.72) 48%, rgba(7,20,38,.22)); }
+.footer { background: var(--color-primary-dark); }
+
+/* Optional dark theme, persisted by main.js. */
+[data-theme="dark"] {
+    --bg-white: #0B1F3A;
+    --bg-light: #0F294A;
+    --bg-section: #102F52;
+    --bg-primary-light: #173B68;
+    --surface-quiet: #102F52;
+    --surface-raised: #173B68;
+    --ink-strong: #F4F8FF;
+    --ink-soft: #C5D4E8;
+    --text-primary: #F4F8FF;
+    --text-secondary: #C5D4E8;
+    --text-muted: #AFC1D8;
+    --border-color: #31547C;
+    --line-soft: #31547C;
+    color-scheme: dark;
+}
+[data-theme="dark"] .navbar { background: rgba(11,31,58,.94); }
+[data-theme="dark"] .navbar .nav-link { color: #C5D4E8; }
+[data-theme="dark"] .card, [data-theme="dark"] .bg-white { background: var(--surface-raised) !important; }
+[data-theme="dark"] .form-control { background: #102F52; color: var(--ink-strong); border-color: var(--border-color); }
+[data-theme="dark"] .section-title, [data-theme="dark"] .card-title { color: var(--ink-strong); }
+[data-theme="dark"] .section-description, [data-theme="dark"] .card-text { color: var(--ink-soft); }
+
+@media (max-width: 767.98px) {
+    :root { --section-padding: 56px 0; }
+    .container { padding-left: var(--container-padding-mobile); padding-right: var(--container-padding-mobile); }
+    .section-title { font-size: clamp(1.65rem, 7vw, 2.25rem); }
+    .btn { width: 100%; }
+    .hero .btn, .page-hero .btn { width: auto; }
+    .page-hero { min-height: 340px; padding-bottom: 52px; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    html { scroll-behavior: auto; }
+    *, *::before, *::after { animation-duration: .01ms !important; animation-iteration-count: 1 !important; transition-duration: .01ms !important; }
+}

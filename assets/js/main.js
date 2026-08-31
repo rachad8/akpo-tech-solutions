@@ -66,3 +66,38 @@ document.addEventListener('DOMContentLoaded', function() {
 
     console.log('AKPO TECH SOLUTIONS - Site chargé');
 });
+
+
+/* Refonte UI/UX : préférence de thème persistante et contrôle accessible. */
+(function initThemePreference() {
+    const stored = localStorage.getItem('akpo-theme');
+    const preferred = stored || (window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light');
+    document.documentElement.dataset.theme = preferred;
+
+    document.addEventListener('DOMContentLoaded', function () {
+        const navbar = document.querySelector('.navbar');
+        if (!navbar || navbar.querySelector('[data-theme-toggle]')) return;
+        const navList = navbar.querySelector('.navbar-nav');
+        if (!navList) return;
+
+        const item = document.createElement('li');
+        item.className = 'nav-item ms-lg-2';
+        item.innerHTML = '<button type="button" class="btn btn-sm btn-outline-primary" data-theme-toggle aria-label="Activer le thème sombre" aria-pressed="false"><i class="bi bi-moon-stars" aria-hidden="true"></i><span class="visually-hidden">Thème</span></button>';
+        navList.appendChild(item);
+        const button = item.querySelector('[data-theme-toggle]');
+
+        function syncTheme() {
+            const dark = document.documentElement.dataset.theme === 'dark';
+            button.setAttribute('aria-pressed', String(dark));
+            button.setAttribute('aria-label', dark ? 'Activer le thème clair' : 'Activer le thème sombre');
+            button.querySelector('i').className = dark ? 'bi bi-sun' : 'bi bi-moon-stars';
+        }
+        syncTheme();
+        button.addEventListener('click', function () {
+            const next = document.documentElement.dataset.theme === 'dark' ? 'light' : 'dark';
+            document.documentElement.dataset.theme = next;
+            localStorage.setItem('akpo-theme', next);
+            syncTheme();
+        });
+    });
+})();

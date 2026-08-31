@@ -11,14 +11,9 @@ module.exports = async (req, res) => {
     const password = typeof body.password === "string" ? body.password : "";
     const fullName = typeof body.fullName === "string" ? body.fullName.trim() : "";
     const phone = typeof body.phone === "string" ? body.phone.trim() : "";
-    const secretCode = typeof body.secretCode === "string" ? body.secretCode.trim() : "";
 
-    if (!email || !password || !fullName || !secretCode) {
+    if (!email || !password || !fullName) {
       return res.status(400).json({ success: false, message: "Veuillez remplir tous les champs obligatoires." });
-    }
-
-    if (secretCode !== process.env.ADMIN_SECRET) {
-      return res.status(403).json({ success: false, message: "Code secret invalide." });
     }
 
     if (password.length < 6) {

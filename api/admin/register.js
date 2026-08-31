@@ -1,4 +1,4 @@
-const { auth, db } = require("../firebase-admin");
+const { getFirebaseAdmin } = require("../firebase-admin");
 
 module.exports = async (req, res) => {
   if (req.method !== "POST") {
@@ -20,6 +20,10 @@ module.exports = async (req, res) => {
       return res.status(400).json({ success: false, message: "Le mot de passe doit contenir au moins 6 caractères." });
     }
 
+    const firebaseAdmin = getFirebaseAdmin();
+    const auth = firebaseAdmin.auth();
+    const db = firebaseAdmin.firestore();
+
     const userRecord = await auth.createUser({
       email: email.trim(),
       password,
@@ -39,22 +43,17 @@ module.exports = async (req, res) => {
       createdAt: new Date(),
     });
 
-    return res.status(201).json({
-      success: true,
-      message: "Compte administrateur créé avec succès.",
-      uid: userRecord.uid,
-    });
+    return res.status(201).json({ success: true, message: "Compte administrateur créé avec succès.", uid: userRecord.uid });
   } catch (error) {
     console.error("Erreur création admin :", error);
 
     if (error.code === "auth/email-already-exists") {
       return res.status(409).json({ success: false, message: "Cet email est déjà utilisé." });
     }
-
     if (error.code === "auth/invalid-email") {
       return res.status(400).json({ success: false, message: "Adresse email invalide." });
     }
 
-    return res.status(500).json({ success: false, message: "Erreur lors de la création du compte administrateur." });
+    return res.status(500).json({ success: false, message: error.message || "Erreur lors de la création du compte administrateur." });
   }
 };

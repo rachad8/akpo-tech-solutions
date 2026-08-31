@@ -23,10 +23,10 @@
       <a href="../index.html"><img src="../assets/logo/logo.png" alt="AKPO TECH SOLUTIONS"></a>
       <span class="admin-badge"><i class="bi bi-shield-lock"></i> ADMINISTRATION</span>
       <h1>Créer un compte admin</h1>
-      <p>Création sécurisée du compte administrateur</p>
+      <p>Création du compte administrateur avec Firebase</p>
     </div>
     <div class="auth-message" id="authMessage"></div>
-    <form id="registerForm" style="display:none;">
+    <form id="registerForm">
       <div class="form-group"><label class="form-label" for="registerNom">Nom complet <span class="text-danger">*</span></label><input type="text" id="registerNom" class="form-control" placeholder="Votre nom complet" required></div>
       <div class="form-group"><label class="form-label" for="registerEmail">Email <span class="text-danger">*</span></label><input type="email" id="registerEmail" class="form-control" placeholder="admin@exemple.com" required></div>
       <div class="form-group"><label class="form-label" for="registerTéléphone">Téléphone</label><input type="tel" id="registerTéléphone" class="form-control" placeholder="Votre numéro"></div>
@@ -40,15 +40,10 @@
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-functions-compat.js"></script>
 <script src="../assets/js/session-guard.js"></script>
 <script>
 var authMessage = document.getElementById('authMessage');
 var registerBtn = document.getElementById('registerBtn');
-
-AkpoGuard.requireAdmin(function () {
-    document.getElementById('registerForm').style.display = 'block';
-}, { loginPath: 'admin-login.html', deniedPath: 'admin-login.html' });
 
 function togglePass(id, btn) {
     var input = document.getElementById(id);
@@ -74,13 +69,10 @@ function hideMessage() {
 
 function errorMessage(error) {
     var code = error && error.code;
-    if (code === 'functions/permission-denied') return '❌ Action réservée aux administrateurs connectés.';
-    if (code === 'functions/invalid-argument') return '❌ Vérifiez les informations saisies.';
-    if (code === 'functions/failed-precondition') return '❌ Le service admin Firebase n’est pas configuré.';
     if (code === 'auth/email-already-exists' || code === 'functions/already-exists') return '❌ Cet email est déjà utilisé.';
     if (code === 'auth/invalid-email') return '❌ Adresse email invalide.';
     if (code === 'auth/weak-password') return '❌ Le mot de passe doit contenir au moins 6 caractères.';
-    if (code === 'functions/unavailable' || code === 'auth/network-request-failed') return '❌ Service indisponible. Vérifiez votre connexion et le déploiement Firebase.';
+    if (code === 'auth/network-request-failed') return '❌ Erreur réseau. Vérifiez votre connexion internet.';
     return '❌ Impossible de créer le compte. Réessayez.';
 }
 
@@ -110,9 +102,26 @@ document.getElementById('registerForm').addEventListener('submit', function (eve
     registerBtn.disabled = true;
     registerBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Création...';
 
-    AkpoGuard.ready.then(function () {
-        var registerAdmin = firebase.functions().httpsCallable('registerAdmin');
-        return registerAdmin({ email: email, password: password, fullName: fullName, phone: phone });
+    AkpoGuard.ready.then(function (services) {
+        return services.auth.createUserWithEmailAndPassword(email, password).then(function (credential) {
+            var user = credential.user;
+            return services.db.collection('clients').doc(user.uid).set({
+                uid: user.uid,
+                email: email,
+                nom: fullName,
+                phone: phone,
+                typeClient: 'admin',
+                role: 'admin',
+                isAdmin: true,
+                createdAt: firebase.firestore.FieldValue.serverTimestamp()
+            }).then(function () {
+                return user;
+            }).catch(function (error) {
+                return user.delete().catch(function () {}).then(function () {
+                    throw error;
+                });
+            });
+        });
     }).then(function () {
         showMessage('✅ Compte administrateur créé. Vous pouvez maintenant vous connecter.', 'success');
         setTimeout(function () { window.location.href = 'admin-login.html'; }, 1500);

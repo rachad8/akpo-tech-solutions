@@ -253,56 +253,6 @@ exports.deleteClientAccount = functions.https.onCall(async (data, context) => {
         throw new functions.https.HttpsError('internal', error.message);
     }
 });
-exports.registerAdmin = functions.https.onCall(async (data, context) => {
-    if (!context.auth) {
-        throw new functions.https.HttpsError('unauthenticated', 'Vous devez être connecté comme administrateur');
-    }
-
-    const requesterProfile = await db.collection('clients').doc(context.auth.uid).get();
-    const requesterIsAdmin = context.auth.token.admin === true ||
-        (requesterProfile.exists && requesterProfile.data().role === 'admin');
-    if (!requesterIsAdmin) {
-        throw new functions.https.HttpsError('permission-denied', 'Action réservée aux administrateurs');
-    }
-
-    const { email, password, fullName, phone } = data || {};
-    if (!email || !password || !fullName) {
-        throw new functions.https.HttpsError('invalid-argument', 'Email, mot de passe et nom complet sont obligatoires');
-    }
-    if (password.length < 6) {
-        throw new functions.https.HttpsError('invalid-argument', 'Le mot de passe doit contenir au moins 6 caractères');
-    }
-
-    try {
-        const userRecord = await admin.auth().createUser({
-            email: email,
-            password: password,
-            displayName: fullName,
-        });
-
-        await admin.auth().setCustomUserClaims(userRecord.uid, { admin: true });
-
-        await db.collection('clients').doc(userRecord.uid).set({
-            uid: userRecord.uid,
-            email: email,
-            nom: fullName,
-            phone: phone || '',
-            typeClient: 'admin',
-            role: 'admin',
-            createdAt: admin.firestore.FieldValue.serverTimestamp(),
-        });
-
-        return {
-            success: true,
-            message: 'Compte administrateur créé avec succès',
-            uid: userRecord.uid
-        };
-    } catch (error) {
-        console.error('❌ Erreur création admin:', error);
-        throw new functions.https.HttpsError('internal', error.message);
-    }
-});
-
 exports.markFacturePaid = functions.https.onCall(async (data, context) => {
     if (!context.auth) {
         throw new functions.https.HttpsError('unauthenticated', 'Vous devez être connecté');

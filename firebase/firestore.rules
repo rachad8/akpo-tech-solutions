@@ -22,14 +22,11 @@ service cloud.firestore {
       return request.auth != null;
     }
 
-    // Empeche un utilisateur de s'auto-attribuer le role admin.
+        // Le formulaire admin public crée directement son profil admin après inscription Firebase.
     function keepsOwnRole() {
       return !request.resource.data.diff(resource.data).affectedKeys().hasAny(['role']);
     }
 
-    function createsAsClient() {
-      return !('role' in request.resource.data) || request.resource.data.role == 'client';
-    }
 
     match /commentaires/{commentId} {
       allow read: if true;
@@ -45,7 +42,7 @@ service cloud.firestore {
 
     match /clients/{userId} {
       allow read: if isAdmin() || isOwner(userId);
-      allow create: if isAuthenticated() && request.auth.uid == userId && createsAsClient();
+      allow create: if isAuthenticated() && request.auth.uid == userId;
       allow update: if isAdmin() || (isOwner(userId) && keepsOwnRole());
       allow delete: if isAdmin();
 

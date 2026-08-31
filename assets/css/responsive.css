@@ -17,11 +17,11 @@
         --navbar-height: var(--navbar-height-mobile);
         --container-padding: var(--container-padding-mobile);
     }
-    
+
     .section {
         padding: var(--section-padding-mobile);
     }
-    
+
     .navbar-collapse {
         background: white;
         padding: var(--spacing-lg);
@@ -29,25 +29,25 @@
         box-shadow: var(--shadow-xl);
         margin-top: var(--spacing-sm);
     }
-    
+
     .hero {
         min-height: auto;
         padding: calc(var(--navbar-height) + 40px) 0 60px;
         text-align: center;
     }
-    
+
     .chatbot-window {
         width: calc(100vw - 32px);
         height: 400px;
         right: 16px;
         bottom: 80px;
     }
-    
+
     .chatbot-toggle {
         right: 16px;
         bottom: 20px;
     }
-    
+
     .back-to-top {
         right: 16px;
         bottom: 72px;
@@ -59,24 +59,24 @@
         --container-padding: 16px;
         --section-padding-mobile: 40px 0;
     }
-    
+
     .section-title {
         font-size: 1.5rem;
     }
-    
+
     .section-description {
         font-size: var(--font-size-base);
     }
-    
+
     .btn-lg {
         padding: 14px 28px;
         font-size: var(--font-size-sm);
     }
-    
+
     .card {
         padding: var(--spacing-lg);
     }
-    
+
     .hero-title {
         font-size: 1.75rem;
     }
@@ -86,16 +86,22 @@
     :root {
         --container-padding: 12px;
     }
-    
+
+    /* Performance mobile : réduire le rendu des sections hors écran. */
+    main > section:not(:first-child), .footer { content-visibility: auto; contain-intrinsic-size: 720px; }
+    .hero-home { contain: layout paint; }
+    .hero-home::before { background: linear-gradient(90deg, rgba(7,20,38,.97), rgba(7,20,38,.78)); }
+    .card:hover, .testimonial-card:hover, .dashboard-stat-card:hover { transform: none; }
+
     .btn {
         padding: 10px 20px;
         font-size: 0.85rem;
     }
-    
+
     .navbar-brand img {
         height: 36px;
     }
-    
+
     .chatbot-window {
         height: 360px;
     }

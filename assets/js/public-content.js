@@ -2,17 +2,17 @@
     'use strict';
 
     const serviceImages = [
-        '../assets/images/services/support-informatique.jpg',
-        '../assets/images/projects/atelier-reparation.jpg',
-        '../assets/images/services/securite-donnees.jpg',
-        '../assets/images/services/reseau-professionnel.jpg',
-        '../assets/images/services/maintenance-serveurs.jpg'
+        '../assets/images/services/support-informatique.webp',
+        '../assets/images/projects/atelier-reparation.webp',
+        '../assets/images/services/securite-donnees.webp',
+        '../assets/images/services/reseau-professionnel.webp',
+        '../assets/images/services/maintenance-serveurs.webp'
     ];
     const projectImages = [
-        '../assets/images/projects/installation-reseau.jpg',
-        '../assets/images/projects/maintenance-reseau.jpg',
-        '../assets/images/services/securite-donnees.jpg',
-        '../assets/images/projects/atelier-reparation.jpg'
+        '../assets/images/projects/installation-reseau.webp',
+        '../assets/images/projects/maintenance-reseau.webp',
+        '../assets/images/services/securite-donnees.webp',
+        '../assets/images/projects/atelier-reparation.webp'
     ];
 
     function escapeHtml(value) {

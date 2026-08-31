@@ -343,3 +343,62 @@
 @media (prefers-reduced-motion: reduce) {
     .dashboard-sidebar, .dashboard-mobile-overlay { transition: none; }
 }
+
+
+/* Navigation basse mobile : accès rapide et esthétique type application. */
+.dashboard-bottom-nav { display: none; }
+@media (max-width: 991px) {
+    .dashboard-mobile-toggle { display: none; }
+    .dashboard-sidebar { transform: translateX(-105%); }
+    .dashboard-main { padding-bottom: 98px; }
+    .dashboard-bottom-nav {
+        display: grid;
+        grid-template-columns: repeat(5, 1fr);
+        align-items: center;
+        position: fixed;
+        left: 12px;
+        right: 12px;
+        bottom: max(12px, env(safe-area-inset-bottom));
+        z-index: 210;
+        min-height: 68px;
+        padding: 7px 8px;
+        border: 1px solid rgba(216,229,243,.92);
+        border-radius: 20px;
+        background: rgba(255,255,255,.96);
+        box-shadow: 0 14px 34px rgba(11,31,58,.18);
+        -webkit-backdrop-filter: blur(16px);
+        backdrop-filter: blur(16px);
+    }
+    .dashboard-bottom-link {
+        display: inline-flex;
+        min-width: 0;
+        min-height: 54px;
+        padding: 6px 3px;
+        flex-direction: column;
+        align-items: center;
+        justify-content: center;
+        gap: 4px;
+        border: 0;
+        border-radius: 14px;
+        background: transparent;
+        color: #6B7C93;
+        font-size: .64rem;
+        font-weight: 600;
+        line-height: 1.1;
+        text-decoration: none;
+        cursor: pointer;
+    }
+    .dashboard-bottom-link i { font-size: 1.12rem; line-height: 1; }
+    .dashboard-bottom-link.active { background: #EFF6FF; color: #2563EB; }
+    .dashboard-bottom-link:focus-visible { outline: 3px solid #93C5FD; outline-offset: 2px; }
+    .dashboard-bottom-more { color: #fff; background: #2563EB; box-shadow: 0 8px 18px rgba(37,99,235,.28); }
+    .dashboard-bottom-more:hover { color: #fff; background: #1D4ED8; }
+    [data-theme="dark"] .dashboard-bottom-nav { background: rgba(16,47,82,.96); border-color: #31547C; }
+    [data-theme="dark"] .dashboard-bottom-link { color: #B9CBE2; }
+    [data-theme="dark"] .dashboard-bottom-link.active { background: rgba(37,99,235,.28); color: #DBEAFE; }
+    [data-theme="dark"] .dashboard-bottom-more { color: #fff; background: #2563EB; }
+}
+@media (max-width: 360px) {
+    .dashboard-bottom-nav { left: 6px; right: 6px; padding-left: 3px; padding-right: 3px; }
+    .dashboard-bottom-link { font-size: .58rem; }
+}

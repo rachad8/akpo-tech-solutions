@@ -30,6 +30,7 @@
       <div class="form-group"><label class="form-label" for="registerNom">Nom complet <span class="text-danger">*</span></label><input type="text" id="registerNom" class="form-control" placeholder="Votre nom complet" required></div>
       <div class="form-group"><label class="form-label" for="registerEmail">Email <span class="text-danger">*</span></label><input type="email" id="registerEmail" class="form-control" placeholder="admin@exemple.com" required></div>
       <div class="form-group"><label class="form-label" for="registerTéléphone">Téléphone</label><input type="tel" id="registerTéléphone" class="form-control" placeholder="Votre numéro"></div>
+      <div class="form-group"><label class="form-label" for="adminCode">Code secret admin <span class="text-danger">*</span></label><div class="input-icon-wrapper"><input type="password" id="adminCode" class="form-control" placeholder="Code fourni par le responsable" autocomplete="off" required><button type="button" class="password-toggle" onclick="togglePass('adminCode', this)"><i class="bi bi-eye"></i></button></div></div>
       <div class="form-group"><label class="form-label" for="registerPassword">Mot de passe <span class="text-danger">*</span></label><div class="input-icon-wrapper"><input type="password" id="registerPassword" class="form-control" placeholder="Min. 6 caractères" minlength="6" required><button type="button" class="password-toggle" onclick="togglePass('registerPassword', this)"><i class="bi bi-eye"></i></button></div></div>
       <div class="form-group"><label class="form-label" for="registerPasswordConfirm">Confirmer le mot de passe <span class="text-danger">*</span></label><div class="input-icon-wrapper"><input type="password" id="registerPasswordConfirm" class="form-control" placeholder="Confirmez" minlength="6" required><button type="button" class="password-toggle" onclick="togglePass('registerPasswordConfirm', this)"><i class="bi bi-eye"></i></button></div></div>
       <button type="submit" class="auth-submit" id="registerBtn"><i class="bi bi-person-plus"></i> Créer le compte admin</button>
@@ -85,8 +86,9 @@ document.getElementById('registerForm').addEventListener('submit', function (eve
     var phone = document.getElementById('registerTéléphone').value.trim();
     var password = document.getElementById('registerPassword').value;
     var passwordConfirm = document.getElementById('registerPasswordConfirm').value;
+    var adminCode = document.getElementById('adminCode').value;
 
-    if (!fullName || !email || !password) {
+    if (!fullName || !email || !password || !adminCode) {
         showMessage('❌ Veuillez remplir tous les champs obligatoires.', 'error');
         return;
     }
@@ -102,32 +104,25 @@ document.getElementById('registerForm').addEventListener('submit', function (eve
     registerBtn.disabled = true;
     registerBtn.innerHTML = '<span class="spinner-border spinner-border-sm"></span> Création...';
 
-    AkpoGuard.ready.then(function (services) {
-        return services.auth.createUserWithEmailAndPassword(email, password).then(function (credential) {
-            var user = credential.user;
-            return services.db.collection('clients').doc(user.uid).set({
-                uid: user.uid,
-                email: email,
-                nom: fullName,
-                phone: phone,
-                typeClient: 'admin',
-                role: 'admin',
-                isAdmin: true,
-                createdAt: firebase.firestore.FieldValue.serverTimestamp()
-            }).then(function () {
-                return user;
-            }).catch(function (error) {
-                return user.delete().catch(function () {}).then(function () {
-                    throw error;
-                });
-            });
+    fetch('https://akpo-tech-solutions.vercel.app/api/admin/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email, password: password, fullName: fullName, phone: phone, adminCode: adminCode })
+    }).then(function (response) {
+        return response.json().catch(function () { return {}; }).then(function (payload) {
+            if (!response.ok) {
+                var error = new Error(payload.message || 'Impossible de créer le compte administrateur.');
+                error.code = 'server/admin-register-' + response.status;
+                throw error;
+            }
+            return payload;
         });
     }).then(function () {
         showMessage('✅ Compte administrateur créé. Vous pouvez maintenant vous connecter.', 'success');
         setTimeout(function () { window.location.href = 'admin-login.html'; }, 1500);
     }).catch(function (error) {
-        console.error('[AKPO] Erreur inscription admin Firebase:', error);
-        showMessage(errorMessage(error), 'error');
+        console.error('[AKPO] Erreur inscription admin serveur:', error);
+        showMessage(error.message || errorMessage(error), 'error');
         registerBtn.disabled = false;
         registerBtn.innerHTML = '<i class="bi bi-person-plus"></i> Créer le compte admin';
     });

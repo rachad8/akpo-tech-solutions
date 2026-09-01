@@ -1,6 +1,18 @@
+const crypto = require("crypto");
 const { getFirebaseAdmin } = require("../firebase-admin");
+const { setCors } = require("../fedapay/_shared");
+
+function constantTimeSecretMatches(provided, expected) {
+  const providedBuffer = Buffer.from(String(provided || ""), "utf8");
+  const expectedBuffer = Buffer.from(String(expected || ""), "utf8");
+  return providedBuffer.length === expectedBuffer.length && crypto.timingSafeEqual(providedBuffer, expectedBuffer);
+}
 
 module.exports = async (req, res) => {
+  setCors(res);
+  if (req.method === "OPTIONS") {
+    return res.status(204).end();
+  }
   if (req.method !== "POST") {
     return res.status(405).json({ success: false, message: "Méthode non autorisée" });
   }
@@ -11,9 +23,19 @@ module.exports = async (req, res) => {
     const password = typeof body.password === "string" ? body.password : "";
     const fullName = typeof body.fullName === "string" ? body.fullName.trim() : "";
     const phone = typeof body.phone === "string" ? body.phone.trim() : "";
+    const adminCode = typeof body.adminCode === "string" ? body.adminCode : "";
 
-    if (!email || !password || !fullName) {
-      return res.status(400).json({ success: false, message: "Veuillez remplir tous les champs obligatoires." });
+    if (!email || !password || !fullName || !adminCode) {
+      return res.status(400).json({ success: false, message: "Veuillez remplir tous les champs obligatoires, y compris le code secret admin." });
+    }
+
+    if (!process.env.ADMIN_SECRET) {
+      console.error("ADMIN_SECRET n’est pas configuré sur le serveur.");
+      return res.status(503).json({ success: false, message: "Le service d’inscription admin n’est pas configuré sur le serveur." });
+    }
+
+    if (!constantTimeSecretMatches(adminCode, process.env.ADMIN_SECRET)) {
+      return res.status(403).json({ success: false, message: "Code secret admin incorrect." });
     }
 
     if (password.length < 6) {

@@ -114,3 +114,17 @@
         global.location.href = target || '../index.html';
     };
 })(window);
+
+
+/* Refonte UI/UX 2026 : chargement de la couche d'expérience (animations,
+   design global, navigation mobile). Chargée une seule fois par page. */
+(function loadAkpoUx() {
+    if (window.__akpoUxRequested) return;
+    window.__akpoUxRequested = true;
+    var current = document.currentScript;
+    var src = current && current.src ? current.src.replace(/[^/]+\.js(\?.*)?$/, 'ux.js') : 'assets/js/ux.js';
+    var s = document.createElement('script');
+    s.src = src;
+    s.defer = true;
+    document.head.appendChild(s);
+})();

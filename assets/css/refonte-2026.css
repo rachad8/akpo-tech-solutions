@@ -166,7 +166,7 @@ p, li { line-height: 1.68; }
     background:
         linear-gradient(transparent 0 96%, var(--akpo-glass-border) 96% 100%) 0 0 / 100% 46px,
         linear-gradient(90deg, transparent 0 96%, var(--akpo-glass-border) 96% 100%) 0 0 / 46px 100%;
-    opacity: .5; pointer-events: none;
+    opacity: .22; pointer-events: none;
     transform: translateY(var(--akpo-parallax, 0)) ;
     -webkit-mask-image: radial-gradient(70% 60% at 50% 30%, #000 0%, transparent 78%);
     mask-image: radial-gradient(70% 60% at 50% 30%, #000 0%, transparent 78%);
@@ -309,7 +309,7 @@ tbody tr:hover { background: color-mix(in srgb, var(--color-primary) 6%, transpa
     .btn { min-height: 48px; }
     .section { padding: var(--section-padding-mobile); }
     .card, .service-gallery-card, .project-card { border-radius: 16px; }
-    .hero { padding-top: 28px; }
+    .hero, .page-hero { padding-top: 86px; }
     .footer { padding-bottom: 24px; }
 }
 

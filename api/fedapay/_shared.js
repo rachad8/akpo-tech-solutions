@@ -77,7 +77,10 @@ async function fedapayRequest(path, options = {}) {
   });
   const payload = await response.json().catch(() => ({}));
   if (!response.ok) {
-    const error = new Error(payload.message || payload.error || `FedaPay a répondu ${response.status}.`);
+    const detail = payload?.message || payload?.error || payload?.errors || payload?.error_description || `FedaPay a répondu ${response.status}.`;
+    const detailText = typeof detail === 'string' ? detail : JSON.stringify(detail);
+    console.error('FedaPay API error:', JSON.stringify({ status: response.status, payload }));
+    const error = new Error(detailText);
     error.statusCode = response.status >= 500 ? 502 : 400;
     throw error;
   }

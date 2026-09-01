@@ -8,7 +8,7 @@ const cors = require('cors')({ origin: true });
 admin.initializeApp();
 const db = admin.firestore();
 
-const EMAIL_USER = functions.config().email.user || 'contatstechsolutionsakpo@gmail.com';
+const EMAIL_USER = functions.config().email.user || 'contactstechsolutionsakpo@gmail.com';
 const EMAIL_PASSWORD = functions.config().email.password;
 
 if (!EMAIL_PASSWORD) {
@@ -75,7 +75,7 @@ exports.notifyNewDemande = functions.firestore
 
         const mailOptions = {
             from: `AKPO TECH <${EMAIL_USER}>`,
-            to: 'contatstechsolutionsakpo@gmail.com',
+            to: 'contactstechsolutionsakpo@gmail.com',
             subject: `📩 Nouvelle demande : ${data.id}`,
             html: html
         };
@@ -137,7 +137,7 @@ exports.notifyNewContact = functions.firestore
 
         const mailOptions = {
             from: `AKPO TECH <${EMAIL_USER}>`,
-            to: 'contatstechsolutionsakpo@gmail.com',
+            to: 'contactstechsolutionsakpo@gmail.com',
             subject: `📩 Nouveau message de ${data.nom || 'visiteur'}`,
             html: html
         };
@@ -157,7 +157,7 @@ exports.notifyNewFacture = functions.firestore
     .onCreate(async (snap, context) => {
         const data = snap.data();
 
-        const clientEmail = data.clientEmail || 'contatstechsolutionsakpo@gmail.com';
+        const clientEmail = data.clientEmail || 'contactstechsolutionsakpo@gmail.com';
 
         const html = `
             <!DOCTYPE html>
@@ -376,7 +376,7 @@ exports.testEmail = functions.https.onCall(async (data, context) => {
     try {
         await transporter.sendMail({
             from: `AKPO TECH <${EMAIL_USER}>`,
-            to: 'contatstechsolutionsakpo@gmail.com',
+            to: 'contactstechsolutionsakpo@gmail.com',
             subject: '✅ Test de configuration email',
             html: `
                 <h2>Configuration email fonctionnelle !</h2>

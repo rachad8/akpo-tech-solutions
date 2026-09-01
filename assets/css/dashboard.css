@@ -266,7 +266,7 @@
 [data-theme="dark"] .dashboard-table th { background: #102F52; }
 [data-theme="dark"] .dashboard-table td { color: #C5D4E8; border-color: #31547C; }
 @media (max-width: 991px) {
-    .dashboard-main { padding: 24px; }
+    .dashboard-main { margin-left: 0; padding: 24px; }
 }
 @media (max-width: 575px) {
     .dashboard-main { padding: 18px 14px; }

@@ -19,8 +19,8 @@ module.exports = async function handler(req, res) {
     if (facture.statut === 'payee') return sendJson(res, 409, { error: 'Cette facture est déjà payée.' });
 
     const amount = Number(facture.montant);
-    if (!Number.isInteger(amount) || amount <= 0) {
-      return sendJson(res, 400, { error: 'Le montant de la facture est invalide.' });
+    if (!Number.isInteger(amount) || amount < 100) {
+      return sendJson(res, 400, { error: 'Le montant minimum pour un paiement FedaPay est de 100 XOF.' });
     }
 
     const merchantReference = `AKPO-${factureId}-${Date.now()}`;

@@ -116,7 +116,7 @@ class AkpoChatbot {
             'contact': {
                 keywords: ['contact', 'joindre', 'appeler', 'email', 'téléphone', 'whatsapp', 'adresse', 'où', 'localisation'],
                 responses: [
-                    "Vous pouvez nous contacter par téléphone au 01 90 18 25 49, par WhatsApp au même numéro, ou par email à contact@akpotechsolutions.com.",
+                    "Vous pouvez nous contacter par téléphone au 01 90 18 25 49, par WhatsApp au même numéro, ou par email à contactstechsolutionsakpo@gmail.com.",
                     "Notre adresse : Calavi Zopah, Cotonou, Bénin. Nous sommes disponibles du lundi au samedi de 8h à 19h."
                 ]
             },

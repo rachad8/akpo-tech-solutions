@@ -47,7 +47,7 @@ function injectSchemaMarkup() {
         'description': 'Maintenance et dépannage informatique. Installation Windows, réparation PC, réseau, sécurité.',
         'url': window.location.origin,
         'telephone': '+2290190182549',
-        'email': 'contact@akpotechsolutions.com',
+        'email': 'contactstechsolutionsakpo@gmail.com',
         'address': {
             '@type': 'PostalAddress',
             'streetAddress': 'Calavi Zopah',

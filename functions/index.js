@@ -67,7 +67,7 @@ exports.notifyNewDemande = functions.firestore
                 </div>
                 <div class="footer">
                     <p>AKPO TECH SOLUTIONS - Votre informatique, notre priorité</p>
-                    <p>Tel: 01 90 18 25 49 | contact@akpotechsolutions.com</p>
+                    <p>Tel: 01 90 18 25 49 | contactstechsolutionsakpo@gmail.com</p>
                 </div>
             </body>
             </html>
@@ -129,7 +129,7 @@ exports.notifyNewContact = functions.firestore
                 </div>
                 <div class="footer">
                     <p>AKPO TECH SOLUTIONS - Votre informatique, notre priorité</p>
-                    <p>Tel: 01 90 18 25 49 | contact@akpotechsolutions.com</p>
+                    <p>Tel: 01 90 18 25 49 | contactstechsolutionsakpo@gmail.com</p>
                 </div>
             </body>
             </html>
@@ -195,7 +195,7 @@ exports.notifyNewFacture = functions.firestore
                 </div>
                 <div class="footer">
                     <p>AKPO TECH SOLUTIONS - Votre informatique, notre priorité</p>
-                    <p>Tel: 01 90 18 25 49 | contact@akpotechsolutions.com</p>
+                    <p>Tel: 01 90 18 25 49 | contactstechsolutionsakpo@gmail.com</p>
                 </div>
             </body>
             </html>

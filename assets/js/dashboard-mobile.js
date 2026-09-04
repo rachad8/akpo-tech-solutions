@@ -14,13 +14,13 @@
     toggle.setAttribute('aria-label', 'Ouvrir le menu');
     toggle.setAttribute('aria-controls', sidebar.id || (isAdmin ? 'adminSidebar' : 'clientSidebar'));
     toggle.setAttribute('aria-expanded', 'false');
-    toggle.innerHTML = '<i class="bi bi-list" aria-hidden="true"></i><span class="visually-hidden">Ouvrir le menu</span>';
+    toggle.innerHTML = '<i class="bi bi-list" aria-hidden="true"></i>';
 
     const close = document.createElement('button');
     close.type = 'button';
     close.className = 'dashboard-mobile-close';
     close.setAttribute('aria-label', 'Fermer le menu');
-    close.innerHTML = '<i class="bi bi-x-lg" aria-hidden="true"></i><span class="visually-hidden">Fermer le menu</span>';
+    close.innerHTML = '<i class="bi bi-x-lg" aria-hidden="true"></i>';
 
     const overlay = document.createElement('button');
     overlay.type = 'button';
@@ -67,25 +67,27 @@
     if (!toggle.parentElement) layout.prepend(toggle);
     layout.append(overlay, bottomNav);
 
-    const setOpen = (open) => {
+    const setOpen = (open, restoreFocus = false) => {
         sidebar.classList.toggle('open', open);
         sidebar.classList.toggle('active', open);
         overlay.classList.toggle('visible', open);
         toggle.setAttribute('aria-expanded', String(open));
-        toggle.setAttribute('aria-label', open ? 'Fermer le menu' : 'Ouvrir le menu');
-        toggle.innerHTML = open
-            ? '<i class="bi bi-x-lg" aria-hidden="true"></i><span class="visually-hidden">Fermer le menu</span>'
-            : '<i class="bi bi-list" aria-hidden="true"></i><span class="visually-hidden">Ouvrir le menu</span>';
+        toggle.setAttribute('aria-label', 'Ouvrir le menu');
+        toggle.setAttribute('aria-hidden', String(open));
+        toggle.tabIndex = open ? -1 : 0;
+        toggle.classList.toggle('is-hidden', open);
+        toggle.innerHTML = '<i class="bi bi-list" aria-hidden="true"></i>';
         document.body.classList.toggle('menu-open', open);
         if (open) close.focus();
+        else if (restoreFocus) toggle.focus();
     };
 
     toggle.addEventListener('click', () => setOpen(!sidebar.classList.contains('open')));
     more.addEventListener('click', () => setOpen(!sidebar.classList.contains('open')));
-    close.addEventListener('click', () => setOpen(false));
-    overlay.addEventListener('click', () => setOpen(false));
+    close.addEventListener('click', () => setOpen(false, true));
+    overlay.addEventListener('click', () => setOpen(false, true));
     sidebar.querySelectorAll('a').forEach((link) => link.addEventListener('click', () => setOpen(false)));
     document.addEventListener('keydown', (event) => {
-        if (event.key === 'Escape' && sidebar.classList.contains('open')) setOpen(false);
+        if (event.key === 'Escape' && sidebar.classList.contains('open')) setOpen(false, true);
     });
 })();

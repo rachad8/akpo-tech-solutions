@@ -302,6 +302,10 @@
     }
     .dashboard-mobile-toggle:focus-visible,
     .dashboard-mobile-close:focus-visible { outline: 3px solid #93C5FD; outline-offset: 3px; }
+    .dashboard-mobile-toggle.is-hidden {
+        opacity: 0;
+        pointer-events: none;
+    }
     .dashboard-sidebar {
         width: min(294px, 86vw);
         transform: translateX(-105%);
@@ -311,6 +315,7 @@
     .dashboard-sidebar.open { transform: translateX(0); }
     .dashboard-mobile-close {
         display: inline-flex;
+        z-index: 2;
         align-items: center;
         justify-content: center;
         position: absolute;
@@ -337,6 +342,14 @@
         transition: opacity .28s ease;
     }
     .dashboard-mobile-overlay.visible { opacity: 1; pointer-events: auto; }
+    body.menu-open .dashboard-bottom-nav {
+        opacity: 0;
+        pointer-events: none;
+        transform: translateY(24px);
+    }
+    .dashboard-bottom-nav {
+        transition: opacity .2s ease, transform .2s ease;
+    }
     .dashboard-main { position: relative; }
 }
 

@@ -333,3 +333,145 @@ tbody tr:hover { background: color-mix(in srgb, var(--color-primary) 6%, transpa
     .hero-visual, .akpo-tabbar { animation: none !important; }
     .akpo-page-enter body { opacity: 1; }
 }
+
+
+/* ----------------- 13. Compatibilité pages administration ---------------- */
+
+.admin-sidebar {
+    width: 280px;
+    min-height: 100vh;
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 150;
+    display: flex;
+    flex-direction: column;
+    overflow-y: auto;
+    padding: 24px 18px;
+    color: #fff;
+    background: linear-gradient(180deg, #0B1F3A 0%, #12345D 100%);
+    box-shadow: 14px 0 36px rgba(11,31,58,.12);
+}
+
+.admin-sidebar .sidebar-brand {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 58px;
+    padding: 0 10px 20px;
+    margin-bottom: 20px;
+    border-bottom: 1px solid rgba(219,234,254,.18);
+}
+
+.admin-sidebar .sidebar-brand img { max-width: 100%; height: 36px; object-fit: contain; }
+.admin-sidebar .sidebar-nav { display: flex; flex: 1; flex-direction: column; gap: 2px; }
+.admin-sidebar .sidebar-nav a,
+.admin-sidebar .sidebar-footer a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 46px;
+    padding: 11px 14px;
+    border-radius: 10px;
+    color: #C8D8EC;
+    font-size: .9rem;
+    text-decoration: none;
+}
+.admin-sidebar .sidebar-nav a:hover,
+.admin-sidebar .sidebar-nav a.active { color: #fff; background: #2563EB; }
+.admin-sidebar .sidebar-footer { margin-top: auto; }
+
+.admin-main {
+    width: calc(100% - 280px);
+    min-height: 100vh;
+    margin-left: 280px;
+    padding: clamp(24px, 4vw, 48px);
+    background: #F4F7FB;
+}
+.admin-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 28px;
+    padding-bottom: 22px;
+    border-bottom: 1px solid #DCE6F2;
+}
+.admin-header .header-left { display: flex; align-items: center; min-width: 0; gap: 12px; }
+.admin-header h1 { margin: 0; color: #10233F; font-size: clamp(1.65rem, 3vw, 2.35rem); }
+.admin-header .sidebar-toggle { display: none; }
+
+@media (max-width: 991.98px) {
+    .admin-sidebar {
+        width: min(294px, 86vw);
+        min-height: 100dvh;
+        transform: translateX(-105%);
+        transition: transform .28s ease;
+        box-shadow: 18px 0 38px rgba(4,18,39,.24);
+    }
+    .admin-sidebar.open,
+    .admin-sidebar.active { transform: translateX(0); }
+    .admin-main {
+        width: 100%;
+        margin-left: 0;
+        padding: 78px 24px 98px;
+    }
+    .admin-header { align-items: flex-start; }
+    .admin-header .sidebar-toggle,
+    .admin-header .dashboard-mobile-toggle {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        flex: 0 0 44px;
+        width: 44px;
+        height: 44px;
+        border: 1px solid #D8E5F3;
+        border-radius: 12px;
+        background: #fff;
+        color: #12345D;
+        box-shadow: 0 8px 20px rgba(11,31,58,.14);
+        font-size: 1.35rem;
+        cursor: pointer;
+    }
+    .admin-main .stats-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .admin-main .table-responsive { max-width: 100%; overflow-x: auto; -webkit-overflow-scrolling: touch; }
+    .admin-main #paymentsTable { min-width: 640px; }
+}
+
+@media (max-width: 767.98px) {
+    .admin-main { padding: 76px 16px 98px; }
+    .admin-header { flex-wrap: wrap; }
+    .admin-header .header-right { width: 100%; }
+    .admin-header h1 { font-size: 1.35rem; overflow-wrap: anywhere; }
+    .admin-main .stats-grid { grid-template-columns: minmax(0, 1fr); gap: 12px; }
+    .admin-main .filter-section { display: grid; grid-template-columns: minmax(0, 1fr); gap: 10px; }
+    .admin-main .filter-section > * { width: 100%; min-width: 0; }
+    .admin-main .btn-actions { flex-wrap: wrap; }
+}
+
+@media (max-width: 575.98px) {
+    .admin-main { padding-left: 12px; padding-right: 12px; }
+    .admin-header h1 { font-size: 1.2rem; }
+}
+
+
+/* Le menu admin historique conserve un bouton d’ouverture, contrairement au client déjà équipé de la tabbar. */
+@media (max-width: 991.98px) {
+    body.has-admin-mobile-nav .dashboard-mobile-toggle {
+        display: inline-flex;
+        position: fixed;
+        top: 16px;
+        left: 16px;
+        z-index: 220;
+        width: 44px;
+        height: 44px;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #D8E5F3;
+        border-radius: 12px;
+        background: #fff;
+        color: #12345D;
+        box-shadow: 0 8px 20px rgba(11,31,58,.14);
+        font-size: 1.35rem;
+        cursor: pointer;
+    }
+}

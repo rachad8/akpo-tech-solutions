@@ -1,14 +1,18 @@
-(() => {
-    const sidebar = document.querySelector('.dashboard-sidebar');
-    const layout = document.querySelector('.dashboard-layout');
+(function () {
+    const sidebar = document.querySelector('.dashboard-sidebar, .admin-sidebar');
+    const layout = document.querySelector('.dashboard-layout') || document.querySelector('.admin-main')?.parentElement;
     if (!sidebar || !layout || document.querySelector('[data-mobile-menu-toggle]')) return;
 
-    const toggle = document.createElement('button');
+    const isAdmin = window.location.pathname.includes('/admin/');
+    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
+    const toggle = document.querySelector('.sidebar-toggle') || document.createElement('button');
+    document.body.classList.toggle('has-admin-mobile-nav', isAdmin);
+
     toggle.type = 'button';
-    toggle.className = 'dashboard-mobile-toggle';
+    toggle.classList.add('dashboard-mobile-toggle');
     toggle.setAttribute('data-mobile-menu-toggle', '');
     toggle.setAttribute('aria-label', 'Ouvrir le menu');
-    toggle.setAttribute('aria-controls', 'clientSidebar');
+    toggle.setAttribute('aria-controls', sidebar.id || (isAdmin ? 'adminSidebar' : 'clientSidebar'));
     toggle.setAttribute('aria-expanded', 'false');
     toggle.innerHTML = '<i class="bi bi-list" aria-hidden="true"></i><span class="visually-hidden">Ouvrir le menu</span>';
 
@@ -27,13 +31,20 @@
     const bottomNav = document.createElement('nav');
     bottomNav.className = 'dashboard-bottom-nav';
     bottomNav.setAttribute('aria-label', 'Navigation principale mobile');
-    const currentPage = window.location.pathname.split('/').pop() || 'index.html';
-    const items = [
-        ['index.html', 'Accueil', 'bi-house'],
-        ['invoices.html', 'Factures', 'bi-receipt'],
-        ['payments.html', 'Paiements', 'bi-credit-card'],
-        ['profile.html', 'Profil', 'bi-person']
-    ];
+    const items = isAdmin
+        ? [
+            ['index.html', 'Accueil', 'bi-house'],
+            ['demandes.html', 'Demandes', 'bi-list-check'],
+            ['clients.html', 'Clients', 'bi-people'],
+            ['messages.html', 'Messages', 'bi-envelope']
+        ]
+        : [
+            ['index.html', 'Accueil', 'bi-house'],
+            ['invoices.html', 'Factures', 'bi-receipt'],
+            ['payments.html', 'Paiements', 'bi-credit-card'],
+            ['profile.html', 'Profil', 'bi-person']
+        ];
+
     items.forEach(([href, label, icon]) => {
         const link = document.createElement('a');
         link.href = href;
@@ -42,6 +53,7 @@
         link.innerHTML = `<i class="bi ${icon}" aria-hidden="true"></i><span>${label}</span>`;
         bottomNav.appendChild(link);
     });
+
     const more = document.createElement('button');
     more.type = 'button';
     more.className = 'dashboard-bottom-link dashboard-bottom-more';
@@ -49,12 +61,15 @@
     more.innerHTML = '<i class="bi bi-grid" aria-hidden="true"></i><span>Plus</span>';
     bottomNav.appendChild(more);
 
-    sidebar.id = sidebar.id || 'clientSidebar';
+    sidebar.id = sidebar.id || (isAdmin ? 'adminSidebar' : 'clientSidebar');
+    toggle.setAttribute('aria-controls', sidebar.id);
     sidebar.insertBefore(close, sidebar.firstChild);
-    layout.append(toggle, overlay, bottomNav);
+    if (!toggle.parentElement) layout.prepend(toggle);
+    layout.append(overlay, bottomNav);
 
     const setOpen = (open) => {
         sidebar.classList.toggle('open', open);
+        sidebar.classList.toggle('active', open);
         overlay.classList.toggle('visible', open);
         toggle.setAttribute('aria-expanded', String(open));
         toggle.setAttribute('aria-label', open ? 'Fermer le menu' : 'Ouvrir le menu');

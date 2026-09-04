@@ -266,10 +266,10 @@
 [data-theme="dark"] .dashboard-table th { background: #102F52; }
 [data-theme="dark"] .dashboard-table td { color: #C5D4E8; border-color: #31547C; }
 @media (max-width: 991px) {
-    .dashboard-main { margin-left: 0; padding: 24px; }
+    .dashboard-main { margin-left: 0; padding: 78px 24px 98px; }
 }
 @media (max-width: 575px) {
-    .dashboard-main { padding: 18px 14px; }
+    .dashboard-main { padding: 76px 14px 98px; }
     .dashboard-header { align-items: flex-start; }
     .dashboard-stat-card { min-height: 96px; }
 }
@@ -348,7 +348,8 @@
 /* Navigation basse mobile : accès rapide et esthétique type application. */
 .dashboard-bottom-nav { display: none; }
 @media (max-width: 991px) {
-    .dashboard-mobile-toggle { display: none; }
+    /* Le hamburger reste disponible pour ouvrir le panneau latéral. */
+    .dashboard-mobile-toggle { display: inline-flex; }
     .dashboard-sidebar { transform: translateX(-105%); }
     .dashboard-main { padding-bottom: 98px; }
     .dashboard-bottom-nav {

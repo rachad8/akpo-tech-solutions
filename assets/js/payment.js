@@ -61,6 +61,7 @@ const FacturationAPI = {
 
 (function initFedaPayInvoiceButtons() {
     function injectButtons() {
+        if (document.body?.dataset.disableFedapay === 'true') return;
         const table = document.getElementById('facturesTable'); if (!table) return;
         table.querySelectorAll('tr').forEach(row => {
             const strong = row.querySelector('td:first-child strong'); if (!strong || row.querySelector('.btn-fedapay-pay')) return;
@@ -72,5 +73,10 @@ const FacturationAPI = {
             actions.prepend(button);
         });
     }
-    document.addEventListener('DOMContentLoaded', () => { const table = document.getElementById('facturesTable'); if (!table) return; new MutationObserver(injectButtons).observe(table, { childList: true, subtree: true }); injectButtons(); });
+    document.addEventListener('DOMContentLoaded', () => {
+        if (document.body?.dataset.disableFedapay === 'true') return;
+        const table = document.getElementById('facturesTable'); if (!table) return;
+        new MutationObserver(injectButtons).observe(table, { childList: true, subtree: true });
+        injectButtons();
+    });
 })();

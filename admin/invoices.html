@@ -88,7 +88,7 @@
     <script src="../assets/js/session-guard.js"></script>
     <script src="../assets/js/payment.js"></script>
 </head>
-<body>
+<body data-disable-fedapay="true">
 
 <div class="dashboard-layout">
     <aside class="dashboard-sidebar">
@@ -273,6 +273,7 @@
                 <td>
                     <button class="btn btn-sm btn-outline-primary btn-action" onclick="downloadPDF('${f.id}')" title="Télécharger"><i class="bi bi-download"></i></button>
                     <button class="btn btn-sm btn-outline-secondary btn-action" onclick="sendEmail('${f.id}')" title="Envoyer"><i class="bi bi-envelope"></i></button>
+                    <button class="btn btn-sm btn-outline-success btn-action" onclick="markPaid('${f.id}')" title="Marquer payée"><i class="bi bi-check"></i></button>
                     <button class="btn btn-sm btn-outline-danger btn-action" onclick="deleteFacture('${f.id}')" title="Supprimer"><i class="bi bi-trash"></i></button>
                 </td>
             </tr>
@@ -295,6 +296,19 @@
 
     function updateBadges() {
 
+    }
+
+    async function markPaid(id) {
+        const result = await FacturationAPI.updateStatut(id, 'payee');
+        if (result.success) {
+            const f = allFactures.find(facture => facture.id === id);
+            if (f) f.statut = 'payee';
+            updateStats();
+            renderTable();
+            showToast('Facture marquée comme payée', 'success');
+        } else {
+            showToast('Erreur : ' + result.error, 'error');
+        }
     }
 
     async function deleteFacture(id) {

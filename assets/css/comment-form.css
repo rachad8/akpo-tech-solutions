@@ -1,0 +1,208 @@
+/* Formulaire de commentaire public */
+.comments-section {
+    background: var(--bg-section);
+}
+
+.comments-intro {
+    max-width: 520px;
+}
+
+.comments-intro .section-tag {
+    margin-bottom: 16px;
+}
+
+.comments-intro-list {
+    display: grid;
+    gap: 16px;
+    margin: 28px 0 0;
+    padding: 0;
+    list-style: none;
+}
+
+.comments-intro-list li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    color: var(--text-secondary);
+}
+
+.comments-intro-list i {
+    color: var(--color-accent);
+    font-size: 1.2rem;
+    line-height: 1.4;
+}
+
+.comment-form-panel {
+    position: relative;
+    overflow: hidden;
+    padding: clamp(24px, 4vw, 40px);
+    border: 1px solid color-mix(in srgb, var(--color-primary) 16%, var(--border-color));
+    border-radius: var(--radius-xl);
+    background: var(--bg-white);
+    box-shadow: var(--shadow-card);
+}
+
+.comment-form-panel::before {
+    content: '';
+    position: absolute;
+    inset: 0 0 auto;
+    height: 4px;
+    background: var(--gradient-primary);
+}
+
+.comment-form-heading {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.comment-form-heading h3 {
+    margin: 0;
+    font-size: clamp(1.25rem, 2vw, 1.5rem);
+}
+
+.comment-form-heading p {
+    margin: 4px 0 0;
+    color: var(--text-muted);
+    font-size: var(--font-size-sm);
+}
+
+.comment-form-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex-shrink: 0;
+    padding: 7px 10px;
+    border: 1px solid var(--color-primary-100);
+    border-radius: var(--radius-full);
+    color: var(--color-primary-dark);
+    background: var(--color-primary-50);
+    font-size: var(--font-size-xs);
+    font-weight: 700;
+    white-space: nowrap;
+}
+
+.comment-form-panel .form-label {
+    margin-bottom: 8px;
+    color: var(--text-primary);
+    font-weight: 600;
+}
+
+.comment-form-panel .form-control,
+.comment-form-panel .form-select {
+    min-height: 48px;
+    border-color: var(--border-color);
+    color: var(--text-primary);
+    background-color: var(--bg-white);
+}
+
+.comment-form-panel textarea.form-control {
+    min-height: 132px;
+    resize: vertical;
+}
+
+.comment-form-panel .form-control:focus,
+.comment-form-panel .form-select:focus {
+    border-color: var(--color-primary);
+    box-shadow: 0 0 0 3px color-mix(in srgb, var(--color-primary) 18%, transparent);
+}
+
+.comment-form-panel .form-control:disabled,
+.comment-form-panel .form-select:disabled,
+.comment-form-panel button:disabled {
+    cursor: not-allowed;
+}
+
+.comment-character-count {
+    display: block;
+    margin-top: 6px;
+    color: var(--text-muted);
+    font-size: var(--font-size-xs);
+    text-align: right;
+}
+
+.comment-auth-notice,
+.comment-form-feedback {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    margin-bottom: 20px;
+    padding: 12px 14px;
+    border-radius: var(--radius-md);
+    font-size: var(--font-size-sm);
+}
+
+.comment-auth-notice {
+    color: var(--text-secondary);
+    background: var(--bg-primary-light);
+}
+
+.comment-auth-notice i {
+    color: var(--color-primary);
+}
+
+.comment-auth-notice a {
+    font-weight: 700;
+}
+
+.comment-form-feedback {
+    margin-top: 18px;
+    margin-bottom: 0;
+}
+
+.comment-form-feedback.success {
+    color: #166534;
+    background: var(--color-success-light);
+}
+
+.comment-form-feedback.error {
+    color: #991B1B;
+    background: var(--color-danger-light);
+}
+
+.comment-form-feedback.info {
+    color: #1E40AF;
+    background: var(--color-info-light);
+}
+
+.comment-submit-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 16px;
+    margin-top: 24px;
+}
+
+.comment-privacy-note {
+    margin: 0;
+    color: var(--text-muted);
+    font-size: var(--font-size-xs);
+    line-height: 1.5;
+}
+
+.comment-privacy-note i {
+    color: var(--color-accent);
+}
+
+@media (max-width: 575.98px) {
+    .comment-form-heading,
+    .comment-submit-row {
+        align-items: flex-start;
+        flex-direction: column;
+    }
+
+    .comment-submit-row .btn {
+        width: 100%;
+    }
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .comment-form-panel,
+    .comment-form-panel * {
+        scroll-behavior: auto !important;
+        transition-duration: 0.01ms !important;
+        animation-duration: 0.01ms !important;
+    }
+}

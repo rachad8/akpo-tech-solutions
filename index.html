@@ -41,6 +41,7 @@
     <link rel="stylesheet" href="assets/css/print.css" media="print">
     <link rel="stylesheet" href="assets/css/accessibility.css">
     <link rel="stylesheet" href="assets/css/refonte-2026.css" data-akpo-refonte>
+    <link rel="stylesheet" href="assets/css/comment-form.css">
     <meta property="og:title" content="AKPO TECH SOLUTIONS | Maintenance informatique à Cotonou et Calavi">
     <meta property="og:description" content="AKPO TECH SOLUTIONS accompagne particuliers et entreprises à Cotonou, Calavi et environs : dépannage PC, maintenance, réseau, sécurité et installation Windows.">
     <meta property="og:image" content="https://akpotechsolutions.com/assets/images/hero/hero-accueil.webp">
@@ -264,6 +265,73 @@
     </section>
 
     
+    <section class="section comments-section" id="commentaires">
+        <div class="container">
+            <div class="row g-5 align-items-center">
+                <div class="col-lg-5" data-animate="fade-left">
+                    <div class="comments-intro">
+                        <span class="section-tag"><i class="bi bi-chat-square-heart"></i> Votre expérience compte</span>
+                        <h2 class="section-title">Partagez votre avis sur AKPO TECH SOLUTIONS</h2>
+                        <p class="section-description">Votre retour nous aide à améliorer chaque intervention et permet à d’autres clients de choisir un accompagnement informatique de confiance.</p>
+                        <ul class="comments-intro-list">
+                            <li><i class="bi bi-check2-circle" aria-hidden="true"></i><span>Un formulaire simple, accessible depuis votre compte client.</span></li>
+                            <li><i class="bi bi-shield-check" aria-hidden="true"></i><span>Chaque commentaire est vérifié avant d’être publié.</span></li>
+                        </ul>
+                    </div>
+                </div>
+                <div class="col-lg-7" data-animate="fade-right">
+                    <div class="comment-form-panel">
+                        <div class="comment-form-heading">
+                            <div>
+                                <h3>Écrire un commentaire</h3>
+                                <p>Quelques mots suffisent pour partager votre expérience.</p>
+                            </div>
+                            <span class="comment-form-badge"><i class="bi bi-lock" aria-hidden="true"></i> Espace sécurisé</span>
+                        </div>
+
+                        <div class="comment-auth-notice" id="commentAuthNotice">
+                            <i class="bi bi-person-lock" aria-hidden="true"></i>
+                            <div>Connectez-vous à votre compte pour publier un commentaire. <a href="auth/login.html">Se connecter</a></div>
+                        </div>
+
+                        <form id="commentForm" novalidate aria-describedby="commentPrivacyNote">
+                            <div class="row g-3">
+                                <div class="col-md-7">
+                                    <label class="form-label" for="commentName">Votre nom</label>
+                                    <input class="form-control" type="text" id="commentName" name="nom" autocomplete="name" minlength="2" maxlength="80" required disabled>
+                                </div>
+                                <div class="col-md-5">
+                                    <label class="form-label" for="commentRating">Votre note</label>
+                                    <select class="form-select" id="commentRating" name="note" required disabled>
+                                        <option value="5">★★★★★ — Excellent</option>
+                                        <option value="4">★★★★☆ — Très bien</option>
+                                        <option value="3">★★★☆☆ — Bien</option>
+                                        <option value="2">★★☆☆☆ — Moyen</option>
+                                        <option value="1">★☆☆☆☆ — À améliorer</option>
+                                    </select>
+                                </div>
+                                <div class="col-12">
+                                    <label class="form-label" for="commentText">Votre commentaire</label>
+                                    <textarea class="form-control" id="commentText" name="texte" rows="5" minlength="10" maxlength="600" placeholder="Qu’avez-vous apprécié lors de votre accompagnement ?" required disabled></textarea>
+                                    <span class="comment-character-count" id="commentCharacterCount" aria-live="polite">0 / 600 caractères</span>
+                                </div>
+                            </div>
+                            <div class="visually-hidden" aria-hidden="true">
+                                <label for="commentWebsite">Site web</label>
+                                <input type="text" id="commentWebsite" name="website" tabindex="-1" autocomplete="off">
+                            </div>
+                            <div class="comment-submit-row">
+                                <p class="comment-privacy-note" id="commentPrivacyNote"><i class="bi bi-info-circle" aria-hidden="true"></i> Votre avis sera d’abord placé en attente de validation.</p>
+                                <button class="btn btn-primary" type="submit" id="commentSubmitButton" disabled><i class="bi bi-send" aria-hidden="true"></i> Envoyer mon avis</button>
+                            </div>
+                            <div class="comment-form-feedback" id="commentFormFeedback" role="status" aria-live="polite" hidden></div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
     <section class="stats-section" id="stats">
         <div class="container">
             <div class="row g-4 text-center">
@@ -353,12 +421,17 @@
 
     
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-auth-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.12.0/firebase-firestore-compat.js"></script>
+    <script src="assets/js/session-guard.js"></script>
     <script src="assets/js/main.js"></script>
     <script src="assets/js/navbar.js"></script>
     <script src="assets/js/scroll.js"></script>
     <script src="assets/js/animations.js"></script>
     <script src="assets/js/counter.js"></script>
     <script src="assets/js/seo.js"></script>
+    <script src="assets/js/comment-form.js"></script>
     
     
     <script src="assets/js/chatbot.js"></script>

@@ -6,7 +6,10 @@ service cloud.firestore {
     // Le custom claim token.admin reste accepte pour compatibilite.
     function isAdmin() {
       return request.auth != null && (
-        request.auth.token.admin == true ||
+        (
+          request.auth.token.keys().hasAll(['admin']) &&
+          request.auth.token.admin == true
+        ) ||
         (
           exists(/databases/$(database)/documents/clients/$(request.auth.uid)) &&
           get(/databases/$(database)/documents/clients/$(request.auth.uid)).data.role == 'admin'
@@ -31,7 +34,20 @@ service cloud.firestore {
     match /commentaires/{commentId} {
       allow get: if true;
       allow list: if isAuthenticated();
-      allow create: if isAuthenticated();
+      allow create: if isAuthenticated()
+        && request.resource.data.keys().hasOnly(['nom', 'note', 'texte', 'uid', 'statut', 'date'])
+        && request.resource.data.uid == request.auth.uid
+        && request.resource.data.statut == 'en-attente'
+        && request.resource.data.note is int
+        && request.resource.data.note >= 1
+        && request.resource.data.note <= 5
+        && request.resource.data.nom is string
+        && request.resource.data.nom.size() >= 2
+        && request.resource.data.nom.size() <= 80
+        && request.resource.data.texte is string
+        && request.resource.data.texte.size() >= 10
+        && request.resource.data.texte.size() <= 600
+        && request.resource.data.date == request.time;
       allow update, delete: if isAdmin();
     }
 
